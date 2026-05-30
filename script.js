@@ -6,6 +6,48 @@ const verdictText = document.querySelector("#verdictText");
 const questList = document.querySelector("#questList");
 const questCount = document.querySelector("#questCount");
 const introRoast = document.querySelector("#introRoast");
+const monsterAvatar = document.querySelector("#monsterAvatar");
+const monsterName = document.querySelector("#monsterName");
+const monsterPanel = document.querySelector("#monsterPanel");
+const verdictLabel = document.querySelector("#verdictLabel");
+
+const monsterRanks = [
+  {
+    min: 0,
+    className: "sprout",
+    name: "Application Sprout",
+    badge: "Training Arc",
+    line: "Tiny, ambitious, and one stiff breeze away from a gap in the activities list.",
+  },
+  {
+    min: 45,
+    className: "goblin",
+    name: "Admissions Goblin",
+    badge: "Needs Loot",
+    line: "Functional applicant detected. The goblin remains unimpressed, but awake.",
+  },
+  {
+    min: 62,
+    className: "troll",
+    name: "Transcript Troll",
+    badge: "Competitive",
+    line: "Solid stats, decent story, and only a few suspiciously ornamental activities.",
+  },
+  {
+    min: 76,
+    className: "drake",
+    name: "Honors Drake",
+    badge: "Strong Build",
+    line: "This application has claws. Now sharpen the narrative before it trips over itself.",
+  },
+  {
+    min: 88,
+    className: "phoenix",
+    name: "Ivy Phoenix",
+    badge: "Final Boss",
+    line: "Annoyingly strong. The file is glowing. The committee may need oven mitts.",
+  },
+];
 
 const majorKeywords = {
   "Computer Science": ["code", "programming", "software", "robotics", "app", "ai", "hackathon"],
@@ -148,8 +190,19 @@ function getLevel(scores) {
   return clamp(average / 8 + 1, 1, 15);
 }
 
+function getAverageScore(scores) {
+  return Object.values(scores).reduce((sum, score) => sum + score, 0) / 5;
+}
+
+function getMonsterRank(scores) {
+  const average = getAverageScore(scores);
+  return monsterRanks
+    .filter((rank) => average >= rank.min)
+    .sort((a, b) => b.min - a.min)[0];
+}
+
 function getReadiness(scores, targetTier) {
-  const average = Object.values(scores).reduce((sum, score) => sum + score, 0) / 5;
+  const average = getAverageScore(scores);
   const targetPressure = {
     "Top 20": 82,
     "Top 50": 70,
@@ -165,16 +218,25 @@ function getReadiness(scores, targetTier) {
 function getVerdict(profile, scores) {
   const weakest = Object.entries(scores).sort((a, b) => a[1] - b[1])[0][0];
   const strongest = Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0];
+  const monster = getMonsterRank(scores);
 
   const verdicts = {
-    "Academic Power": `Your ${strongest.toLowerCase()} is doing pushups while your academic power is looking for a chair. Fix the transcript story before aiming at ${profile.targetTier}.`,
-    Leadership: `You have activities, yes. Leadership? Currently decorative. Pick one arena and become mildly unavoidable.`,
-    Impact: `The vibes exist, but the receipts are missing. Colleges love impact they can count without squinting.`,
-    "Major Alignment": `${profile.major} applicant detected. Evidence of ${profile.major} obsession: still loading. Build something that makes the major obvious.`,
-    "Narrative Strength": `This is not a build yet. It is a pile. A respectable pile, but still a pile. Find the thread.`,
+    "Academic Power": `${monster.name} verdict: your ${strongest.toLowerCase()} is doing pushups while academic power is looking for a chair. Fix the transcript story before aiming at ${profile.targetTier}.`,
+    Leadership: `${monster.name} verdict: you have activities, yes. Leadership? Currently decorative. Pick one arena and become mildly unavoidable.`,
+    Impact: `${monster.name} verdict: the vibes exist, but the receipts are missing. Colleges love impact they can count without squinting.`,
+    "Major Alignment": `${monster.name} verdict: ${profile.major} applicant detected. Evidence of ${profile.major} obsession is still loading. Build something that makes the major obvious.`,
+    "Narrative Strength": `${monster.name} verdict: this is not a build yet. It is a pile. A respectable pile, but still a pile. Find the thread.`,
   };
 
   return verdicts[weakest];
+}
+
+function renderMonster(monster) {
+  monsterAvatar.className = `monster-avatar ${monster.className}`;
+  monsterPanel.setAttribute("aria-label", `${monster.name} avatar panel`);
+  monsterName.textContent = monster.name;
+  introRoast.textContent = monster.line;
+  verdictLabel.textContent = `${monster.name} Verdict`;
 }
 
 function chooseQuests(scores) {
@@ -235,11 +297,12 @@ function generateBuild() {
   const profile = getProfile();
   const scores = scoreProfile(profile);
   const level = getLevel(scores);
+  const monster = getMonsterRank(scores);
 
   buildTitle.textContent = `${profile.major} Applicant Lv. ${level}`;
-  readinessBadge.textContent = getReadiness(scores, profile.targetTier);
+  readinessBadge.textContent = `${monster.badge}: ${getReadiness(scores, profile.targetTier)}`;
   verdictText.textContent = getVerdict(profile, scores);
-  introRoast.textContent = "I have reviewed the evidence. Some of it survived.";
+  renderMonster(monster);
   renderStats(scores);
   renderQuests(chooseQuests(scores));
 }

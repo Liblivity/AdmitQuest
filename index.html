@@ -35,8 +35,10 @@
               leadership, impact, major alignment, and narrative strength.
             </p>
           </div>
-          <div class="mascot-panel" aria-label="Admissions Goblin mascot panel">
-            <div class="goblin">
+          <div class="mascot-panel" id="monsterPanel" aria-label="Applicant monster avatar panel">
+            <div class="monster-avatar goblin" id="monsterAvatar" aria-hidden="true">
+              <div class="horn horn-left"></div>
+              <div class="horn horn-right"></div>
               <div class="ear ear-left"></div>
               <div class="ear ear-right"></div>
               <div class="face">
@@ -46,10 +48,12 @@
                 <div class="eye eye-right"></div>
                 <div class="nose"></div>
                 <div class="mouth"></div>
+                <div class="fang fang-left"></div>
+                <div class="fang fang-right"></div>
               </div>
             </div>
             <div class="speech">
-              <strong>Admissions Goblin</strong>
+              <strong id="monsterName">Admissions Goblin</strong>
               <span id="introRoast">Ready to judge your extracurricular soup.</span>
             </div>
           </div>
@@ -146,7 +150,7 @@
             <div class="stats-list" id="statsList"></div>
 
             <div class="verdict">
-              <p class="eyebrow">Goblin Verdict</p>
+              <p class="eyebrow" id="verdictLabel">Goblin Verdict</p>
               <blockquote id="verdictText">
                 You have enough STEM energy to scare a guidance counselor, but your leadership
                 stat is currently decorative.
