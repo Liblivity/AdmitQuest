@@ -13,6 +13,7 @@ const verdictLabel = document.querySelector("#verdictLabel");
 const monsterRankName = document.querySelector("#monsterRankName");
 const monsterRankLine = document.querySelector("#monsterRankLine");
 const monsterScore = document.querySelector("#monsterScore");
+const monsterRankAvatar = document.querySelector("#monsterRankAvatar");
 
 const monsterRanks = [
   {
@@ -237,6 +238,7 @@ function getVerdict(profile, scores) {
 function renderMonster(monster, scores) {
   const average = Math.round(getAverageScore(scores));
   monsterAvatar.className = `monster-avatar ${monster.className}`;
+  monsterRankAvatar.className = `monster-avatar ${monster.className} compact`;
   monsterPanel.setAttribute("aria-label", `${monster.name} avatar panel`);
   monsterName.textContent = monster.name;
   introRoast.textContent = monster.line;

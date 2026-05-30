@@ -528,7 +528,7 @@ textarea:focus {
 
 .monster-card {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 16px;
   align-items: center;
   padding: 16px;
@@ -537,6 +537,159 @@ textarea:focus {
   background:
     linear-gradient(135deg, rgba(216, 168, 55, 0.16), transparent 52%),
     #fffdf7;
+}
+
+.monster-token {
+  display: grid;
+  place-items: center;
+  width: 108px;
+  height: 108px;
+  border: 1px solid rgba(22, 33, 27, 0.12);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 250, 240, 0.9), transparent 62%),
+    rgba(38, 115, 77, 0.08);
+  overflow: hidden;
+}
+
+.monster-avatar.compact {
+  width: 92px;
+  height: 92px;
+}
+
+.monster-avatar.compact .horn {
+  top: 0;
+  width: 20px;
+  height: 34px;
+  border-width: 3px;
+}
+
+.monster-avatar.compact .horn-left {
+  left: 25px;
+}
+
+.monster-avatar.compact .horn-right {
+  right: 25px;
+}
+
+.monster-avatar.compact .ear {
+  top: 25px;
+  width: 34px;
+  height: 43px;
+  border-width: 3px;
+}
+
+.monster-avatar.compact .ear-left {
+  left: -9px;
+}
+
+.monster-avatar.compact .ear-right {
+  right: -9px;
+}
+
+.monster-avatar.compact .face {
+  inset: 10px;
+  border-width: 3px;
+}
+
+.monster-avatar.compact .eye {
+  top: 36px;
+  width: 12px;
+  height: 12px;
+  border-width: 2px;
+}
+
+.monster-avatar.compact .eye-left {
+  left: 30px;
+}
+
+.monster-avatar.compact .eye-right {
+  right: 30px;
+}
+
+.monster-avatar.compact .brow {
+  top: 31px;
+  width: 21px;
+  height: 4px;
+}
+
+.monster-avatar.compact .brow-left {
+  left: 25px;
+}
+
+.monster-avatar.compact .brow-right {
+  right: 25px;
+}
+
+.monster-avatar.compact .nose {
+  top: 48px;
+  width: 11px;
+  height: 9px;
+}
+
+.monster-avatar.compact .mouth {
+  bottom: 22px;
+  width: 29px;
+  height: 12px;
+  border-bottom-width: 4px;
+}
+
+.monster-avatar.compact .fang {
+  bottom: 19px;
+  width: 8px;
+  height: 13px;
+  border-width: 2px;
+}
+
+.monster-avatar.compact .fang-left {
+  left: 33px;
+}
+
+.monster-avatar.compact .fang-right {
+  right: 33px;
+}
+
+.monster-avatar.compact.troll .face {
+  inset: 8px 10px 7px;
+}
+
+.monster-avatar.compact.troll .ear {
+  top: 29px;
+  width: 42px;
+}
+
+.monster-avatar.compact.troll .mouth {
+  width: 37px;
+}
+
+.monster-avatar.compact.sprout .ear {
+  height: 32px;
+}
+
+.monster-avatar.compact.sprout .mouth {
+  width: 22px;
+}
+
+.monster-avatar.compact.drake .ear,
+.monster-avatar.compact.phoenix .ear {
+  top: 31px;
+  height: 36px;
+}
+
+.monster-avatar.compact.phoenix::before,
+.monster-avatar.compact.phoenix::after {
+  top: 7px;
+  width: 43px;
+  height: 66px;
+  border-width: 3px;
+}
+
+.monster-avatar.compact.phoenix::before {
+  left: -19px;
+}
+
+.monster-avatar.compact.phoenix::after {
+  right: -19px;
 }
 
 .monster-card h3 {
@@ -712,6 +865,11 @@ blockquote {
 
   .monster-card {
     grid-template-columns: 1fr;
+  }
+
+  .monster-token {
+    width: 100%;
+    min-height: 112px;
   }
 
   .monster-score {
