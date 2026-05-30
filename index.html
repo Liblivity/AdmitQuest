@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AdmitQuest</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Admissions RPG Builder</p>
+            <h1>AdmitQuest</h1>
+          </div>
+          <div class="status-pill">
+            <span class="pulse"></span>
+            Prototype v0
+          </div>
+        </header>
+
+        <section class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">Summon Your Applicant Build</p>
+            <h2>Turn a college application into stats, roasts, and quests.</h2>
+            <p>
+              Enter a quick profile and get an RPG-style read on academic power,
+              leadership, impact, major alignment, and narrative strength.
+            </p>
+          </div>
+          <div class="mascot-panel" aria-label="Admissions Goblin mascot panel">
+            <div class="goblin">
+              <div class="ear ear-left"></div>
+              <div class="ear ear-right"></div>
+              <div class="face">
+                <div class="brow brow-left"></div>
+                <div class="brow brow-right"></div>
+                <div class="eye eye-left"></div>
+                <div class="eye eye-right"></div>
+                <div class="nose"></div>
+                <div class="mouth"></div>
+              </div>
+            </div>
+            <div class="speech">
+              <strong>Admissions Goblin</strong>
+              <span id="introRoast">Ready to judge your extracurricular soup.</span>
+            </div>
+          </div>
+        </section>
+
+        <div class="content-grid">
+          <form id="profileForm" class="builder" autocomplete="off">
+            <div class="panel-title">
+              <div>
+                <p class="eyebrow">Player Sheet</p>
+                <h3>Tell the Goblin your stats</h3>
+              </div>
+              <button class="icon-button" type="reset" aria-label="Reset form" title="Reset">
+                ↺
+              </button>
+            </div>
+
+            <div class="field-grid">
+              <label>
+                Grade
+                <select id="grade">
+                  <option value="9">9th</option>
+                  <option value="10">10th</option>
+                  <option value="11" selected>11th</option>
+                  <option value="12">12th</option>
+                </select>
+              </label>
+
+              <label>
+                Intended Major
+                <select id="major">
+                  <option value="Computer Science">Computer Science</option>
+                  <option value="Engineering">Engineering</option>
+                  <option value="Pre-Med">Pre-Med</option>
+                  <option value="Business">Business</option>
+                  <option value="Physics">Physics</option>
+                  <option value="Undecided">Undecided</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="field-grid">
+              <label>
+                GPA
+                <input id="gpa" type="number" min="0" max="4" step="0.01" value="3.78" />
+              </label>
+
+              <label>
+                AP / IB / Honors Count
+                <input id="rigor" type="number" min="0" max="20" step="1" value="6" />
+              </label>
+            </div>
+
+            <label>
+              Activities
+              <textarea
+                id="activities"
+                rows="5"
+                placeholder="Example: NHS, robotics, tutoring, research, business club"
+              >NHS, Key Club, robotics, tutoring younger students</textarea>
+            </label>
+
+            <label>
+              Awards
+              <textarea
+                id="awards"
+                rows="3"
+                placeholder="Example: Science fair finalist, DECA state qualifier"
+              >Honor roll, regional robotics qualifier</textarea>
+            </label>
+
+            <label>
+              Target School Tier
+              <select id="targetTier">
+                <option value="Top 20">Top 20</option>
+                <option value="Top 50" selected>Top 50</option>
+                <option value="Strong State School">Strong State School</option>
+                <option value="Scholarship Maxing">Scholarship Maxing</option>
+              </select>
+            </label>
+
+            <button class="primary-button" type="submit">Generate Build</button>
+          </form>
+
+          <section class="results" aria-live="polite">
+            <div class="result-header">
+              <div>
+                <p class="eyebrow">Applicant Build</p>
+                <h3 id="buildTitle">Computer Science Applicant Lv. 8</h3>
+              </div>
+              <span id="readinessBadge" class="readiness">Top 50 Ready-ish</span>
+            </div>
+
+            <div class="stats-list" id="statsList"></div>
+
+            <div class="verdict">
+              <p class="eyebrow">Goblin Verdict</p>
+              <blockquote id="verdictText">
+                You have enough STEM energy to scare a guidance counselor, but your leadership
+                stat is currently decorative.
+              </blockquote>
+            </div>
+
+            <div class="quests">
+              <div class="panel-title">
+                <div>
+                  <p class="eyebrow">Quest Roadmap</p>
+                  <h3>Next moves</h3>
+                </div>
+                <span id="questCount">4 quests</span>
+              </div>
+              <ol id="questList" class="quest-roadmap"></ol>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
