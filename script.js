@@ -54,7 +54,21 @@ const monsterRanks = [
 ];
 
 const majorKeywords = {
-  "Computer Science": ["code", "programming", "software", "robotics", "app", "ai", "hackathon"],
+  "Computer Science": [
+    "computer science",
+    "cs",
+    "code",
+    "programming",
+    "software",
+    "robotics",
+    "app",
+    "ai",
+    "algorithm",
+    "olympiad",
+    "usaco",
+    "ioi",
+    "hackathon",
+  ],
   Engineering: ["robotics", "engineering", "build", "cad", "math", "physics", "design"],
   "Pre-Med": ["hospital", "clinic", "biology", "research", "volunteer", "health", "science"],
   Business: ["business", "deca", "startup", "finance", "marketing", "sales", "entrepreneur"],
@@ -134,6 +148,45 @@ function countMatches(text, terms) {
   return terms.reduce((count, term) => count + (lowered.includes(term) ? 1 : 0), 0);
 }
 
+function hasAny(text, terms) {
+  const lowered = text.toLowerCase();
+  return terms.some((term) => lowered.includes(term));
+}
+
+function getAwardPower(awardText) {
+  const lowered = awardText.toLowerCase();
+  const hasInternationalSignal = hasAny(lowered, ["international", "world", "global"]);
+  const hasNationalSignal = hasAny(lowered, ["national", "usa", "usaco", "aime", "isef", "regeneron"]);
+  const hasEliteCompetition = hasAny(lowered, [
+    "olympiad",
+    "ioi",
+    "imo",
+    "icho",
+    "ipho",
+    "ibo",
+    "isef",
+    "regeneron",
+    "sts",
+    "usaco platinum",
+  ]);
+  const hasTopPlacement = hasAny(lowered, [
+    "gold",
+    "winner",
+    "champion",
+    "1st",
+    "first place",
+    "finalist",
+    "medalist",
+    "platinum",
+  ]);
+
+  if (hasInternationalSignal && hasEliteCompetition && hasTopPlacement) return 42;
+  if ((hasInternationalSignal || hasNationalSignal) && hasEliteCompetition) return 32;
+  if (hasNationalSignal && hasTopPlacement) return 24;
+  if (hasTopPlacement) return 14;
+  return 0;
+}
+
 function getProfile() {
   return {
     grade: Number(document.querySelector("#grade").value),
@@ -148,6 +201,7 @@ function getProfile() {
 
 function scoreProfile(profile) {
   const activityText = `${profile.activities} ${profile.awards}`;
+  const awardPower = getAwardPower(profile.awards);
   const activityItems = profile.activities
     .split(/,|\n/)
     .map((item) => item.trim())
@@ -177,15 +231,34 @@ function scoreProfile(profile) {
     "qualified",
     "winner",
     "finalist",
+    "international",
+    "national",
+    "gold",
+    "medal",
+    "olympiad",
+    "champion",
+    "1st",
+    "first place",
   ]);
   const alignmentMatches = countMatches(activityText, majorKeywords[profile.major] || []);
+  const hasMajorPrestige = awardPower >= 24 && alignmentMatches > 0;
+
+  const academicPower = clamp(profile.gpa * 18 + profile.rigor * 3.6 + awardPower * 0.55);
+  const leadership = clamp(18 + leadershipMatches * 15 + Math.min(activityItems.length, 7) * 4);
+  const impact = clamp(20 + impactMatches * 10 + awardItems.length * 5 + activityItems.length * 2 + awardPower);
+  const majorAlignment = clamp(
+    18 + alignmentMatches * 12 + (profile.major === "Undecided" ? 8 : 0) + (hasMajorPrestige ? awardPower * 0.9 : 0),
+  );
+  const narrativeStrength = clamp(
+    28 + alignmentMatches * 7 + leadershipMatches * 5 + impactMatches * 3 + awardPower * 0.55,
+  );
 
   return {
-    "Academic Power": clamp(profile.gpa * 18 + profile.rigor * 3.6),
-    Leadership: clamp(18 + leadershipMatches * 15 + Math.min(activityItems.length, 7) * 4),
-    Impact: clamp(20 + impactMatches * 13 + awardItems.length * 6 + activityItems.length * 2),
-    "Major Alignment": clamp(18 + alignmentMatches * 14 + (profile.major === "Undecided" ? 8 : 0)),
-    "Narrative Strength": clamp(28 + alignmentMatches * 8 + leadershipMatches * 5 + impactMatches * 4),
+    "Academic Power": academicPower,
+    Leadership: leadership,
+    Impact: impact,
+    "Major Alignment": majorAlignment,
+    "Narrative Strength": narrativeStrength,
   };
 }
 
