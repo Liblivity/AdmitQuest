@@ -10,6 +10,9 @@ const monsterAvatar = document.querySelector("#monsterAvatar");
 const monsterName = document.querySelector("#monsterName");
 const monsterPanel = document.querySelector("#monsterPanel");
 const verdictLabel = document.querySelector("#verdictLabel");
+const monsterRankName = document.querySelector("#monsterRankName");
+const monsterRankLine = document.querySelector("#monsterRankLine");
+const monsterScore = document.querySelector("#monsterScore");
 
 const monsterRanks = [
   {
@@ -231,12 +234,16 @@ function getVerdict(profile, scores) {
   return verdicts[weakest];
 }
 
-function renderMonster(monster) {
+function renderMonster(monster, scores) {
+  const average = Math.round(getAverageScore(scores));
   monsterAvatar.className = `monster-avatar ${monster.className}`;
   monsterPanel.setAttribute("aria-label", `${monster.name} avatar panel`);
   monsterName.textContent = monster.name;
   introRoast.textContent = monster.line;
   verdictLabel.textContent = `${monster.name} Verdict`;
+  monsterRankName.textContent = monster.name;
+  monsterRankLine.textContent = monster.line;
+  monsterScore.textContent = average;
 }
 
 function chooseQuests(scores) {
@@ -302,7 +309,7 @@ function generateBuild() {
   buildTitle.textContent = `${profile.major} Applicant Lv. ${level}`;
   readinessBadge.textContent = `${monster.badge}: ${getReadiness(scores, profile.targetTier)}`;
   verdictText.textContent = getVerdict(profile, scores);
-  renderMonster(monster);
+  renderMonster(monster, scores);
   renderStats(scores);
   renderQuests(chooseQuests(scores));
 }

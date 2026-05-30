@@ -526,6 +526,54 @@ textarea:focus {
   gap: 12px;
 }
 
+.monster-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid rgba(22, 33, 27, 0.14);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(216, 168, 55, 0.16), transparent 52%),
+    #fffdf7;
+}
+
+.monster-card h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.monster-card p:last-child {
+  margin: 8px 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.monster-score {
+  display: grid;
+  place-items: center;
+  min-width: 86px;
+  min-height: 86px;
+  border: 1px solid rgba(18, 72, 49, 0.22);
+  border-radius: 50%;
+  color: var(--green-dark);
+  background: rgba(38, 115, 77, 0.1);
+}
+
+.monster-score span {
+  font-size: 1.9rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.monster-score small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
 .stat {
   display: grid;
   gap: 8px;
@@ -660,5 +708,13 @@ blockquote {
 
   .reward {
     grid-column: 2;
+  }
+
+  .monster-card {
+    grid-template-columns: 1fr;
+  }
+
+  .monster-score {
+    width: 86px;
   }
 }
