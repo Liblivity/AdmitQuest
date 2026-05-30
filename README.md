@@ -6,10 +6,15 @@ AdmitQuest is an early prototype for a college admissions RPG. Students enter a 
 
 Open `index.html` in a browser.
 
+## AI Evaluation
+
+The static site falls back to local heuristic scoring. To enable AI scoring, deploy this repo to Vercel and add an `OPENAI_API_KEY` environment variable. The browser calls `/api/evaluate`; the serverless function keeps the API key off the client.
+
 ## Prototype Features
 
 - Applicant profile form
 - RPG stat scoring
+- Optional AI evaluation endpoint
 - Admissions Goblin verdict
 - Quest roadmap recommendations
 - Responsive single-page layout

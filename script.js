@@ -262,6 +262,40 @@ function scoreProfile(profile) {
   };
 }
 
+function mergeScores(baseScores, aiScores) {
+  if (!aiScores) return baseScores;
+
+  return {
+    "Academic Power": clamp(aiScores.academicPower ?? baseScores["Academic Power"]),
+    Leadership: clamp(aiScores.leadership ?? baseScores.Leadership),
+    Impact: clamp(aiScores.impact ?? baseScores.Impact),
+    "Major Alignment": clamp(aiScores.majorAlignment ?? baseScores["Major Alignment"]),
+    "Narrative Strength": clamp(aiScores.narrativeStrength ?? baseScores["Narrative Strength"]),
+  };
+}
+
+async function evaluateWithAi(profile, fallbackScores) {
+  try {
+    const response = await fetch("/api/evaluate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(profile),
+    });
+
+    if (!response.ok) return { scores: fallbackScores, ai: null };
+
+    const ai = await response.json();
+    return {
+      scores: mergeScores(fallbackScores, ai.scores),
+      ai,
+    };
+  } catch (error) {
+    return { scores: fallbackScores, ai: null };
+  }
+}
+
 function getLevel(scores) {
   const average = Object.values(scores).reduce((sum, score) => sum + score, 0) / 5;
   return clamp(average / 8 + 1, 1, 15);
@@ -292,7 +326,9 @@ function getReadiness(scores, targetTier) {
   return `${targetTier} Training Arc`;
 }
 
-function getVerdict(profile, scores) {
+function getVerdict(profile, scores, aiEvaluation) {
+  if (aiEvaluation?.verdict) return aiEvaluation.verdict;
+
   const weakest = Object.entries(scores).sort((a, b) => a[1] - b[1])[0][0];
   const strongest = Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0];
   const monster = getMonsterRank(scores);
@@ -321,7 +357,15 @@ function renderMonster(monster, scores) {
   monsterScore.textContent = average;
 }
 
-function chooseQuests(scores) {
+function chooseQuests(scores, aiEvaluation) {
+  if (Array.isArray(aiEvaluation?.quests) && aiEvaluation.quests.length > 0) {
+    return aiEvaluation.quests.slice(0, 4).map((quest) => ({
+      title: quest.title,
+      detail: quest.detail,
+      reward: quest.reward,
+    }));
+  }
+
   const categories = {
     "Academic Power": "academic",
     Leadership: "leadership",
@@ -375,18 +419,25 @@ function renderQuests(quests) {
     .join("");
 }
 
-function generateBuild() {
+async function generateBuild() {
   const profile = getProfile();
-  const scores = scoreProfile(profile);
+  const fallbackScores = scoreProfile(profile);
+  const loadingMonster = getMonsterRank(fallbackScores);
+
+  readinessBadge.textContent = "Evaluating build...";
+  monsterRankName.textContent = loadingMonster.name;
+  monsterRankLine.textContent = "Checking the applicant file without trusting keyword soup too much.";
+
+  const { scores, ai } = await evaluateWithAi(profile, fallbackScores);
   const level = getLevel(scores);
   const monster = getMonsterRank(scores);
 
   buildTitle.textContent = `${profile.major} Applicant Lv. ${level}`;
   readinessBadge.textContent = `${monster.badge}: ${getReadiness(scores, profile.targetTier)}`;
-  verdictText.textContent = getVerdict(profile, scores);
+  verdictText.textContent = getVerdict(profile, scores, ai);
   renderMonster(monster, scores);
   renderStats(scores);
-  renderQuests(chooseQuests(scores));
+  renderQuests(chooseQuests(scores, ai));
 }
 
 form.addEventListener("submit", (event) => {
