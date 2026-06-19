@@ -643,13 +643,40 @@ function renderProfessorSetup(searchLinks = []) {
   professorList.innerHTML = "";
   const card = document.createElement("article");
   card.className = "professor-card";
-  const links = searchLinks.slice(0, 4).map((link) => `
-    <a href="${link.url}" target="_blank" rel="noreferrer">${escapeHtml(link.query)}</a>
+  const city = cityInput.value.trim();
+  const country = countrySelect.value;
+  const interest = getSearchInterestPhrase();
+  const fallbackLinks = [
+    {
+      label: "Search professors",
+      query: `${interest} professor ${city} ${country}`,
+    },
+    {
+      label: "Search faculty labs",
+      query: `${interest} faculty research lab ${city} ${country}`,
+    },
+    {
+      label: "Find emails",
+      query: `${interest} professor email ${city} ${country}`,
+    },
+    {
+      label: "Student research",
+      query: `${interest} high school student research opportunity ${city} ${country}`,
+    },
+  ].filter((link) => link.query.trim().length > 0);
+  const links = (searchLinks.length ? searchLinks.slice(0, 4).map((link, index) => ({
+    label: ["Search professors", "Search faculty labs", "Find emails", "Student research"][index] || "Open search",
+    url: link.url,
+  })) : fallbackLinks.map((link) => ({
+    label: link.label,
+    url: makeSearchUrl(link.query),
+  }))).map((link) => `
+    <a href="${link.url}" target="_blank" rel="noreferrer">${escapeHtml(link.label)}</a>
   `).join("");
 
   card.innerHTML = `
-    <h4>Professor search needs a server-side search API</h4>
-    <p class="lab-note">Deploy on Vercel with TAVILY_API_KEY or SERPAPI_KEY to automatically find professor emails and rank compatibility.</p>
+    <h4>Professor search links</h4>
+    <p class="lab-note">Automatic professor matching is still a server-side feature. For now, these searches are built from the student's detected interests and location.</p>
     <div class="professor-actions">${links || ""}</div>
   `;
   professorList.appendChild(card);
@@ -663,7 +690,7 @@ function renderProfessors(professors) {
 
   if (!professors.length) {
     renderProfessorSetup();
-    setProfessorStatus("No leads");
+    setProfessorStatus("Search links");
     return;
   }
 
@@ -702,7 +729,7 @@ async function findProfessors() {
 
   if (!city) {
     renderProfessorSetup();
-    setProfessorStatus("Location needed");
+    setProfessorStatus("Add city");
     return;
   }
 
@@ -729,7 +756,7 @@ async function findProfessors() {
 
     if (!response.ok) {
       renderProfessorSetup(data.searchLinks || []);
-      setProfessorStatus("API setup needed");
+      setProfessorStatus("Search links");
       return;
     }
 
@@ -737,7 +764,7 @@ async function findProfessors() {
     setProfessorStatus(`${data.professors?.length || 0} professors`);
   } catch (error) {
     renderProfessorSetup();
-    setProfessorStatus("API setup needed");
+    setProfessorStatus("Search links");
   }
 }
 
