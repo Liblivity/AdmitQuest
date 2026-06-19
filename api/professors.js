@@ -1,3 +1,4 @@
+import { applyCors } from "./http-utils.js";
 import { cleanText, extractEmails, makeSearchUrl, openaiJson, searchWeb } from "./search-utils.js";
 
 const PROFESSOR_SCHEMA = {
@@ -56,7 +57,7 @@ function buildQueries(profile) {
 }
 
 function fallbackProfessorFromResult(result, index, focus, location) {
-  const email = extractEmails(`${result.title} ${result.snippet}`).at(0) || "";
+  const email = result.email || extractEmails(`${result.title} ${result.snippet}`).at(0) || "";
   const name = result.title.split(/[-|–—]/)[0]?.trim() || `Professor lead ${index + 1}`;
 
   return {
@@ -73,7 +74,55 @@ function fallbackProfessorFromResult(result, index, focus, location) {
   };
 }
 
+function htmlToSearchableText(html) {
+  return String(html || "")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+async function enrichResultWithPageEmail(result) {
+  if (!result.url || !/^https?:\/\//i.test(result.url)) return result;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 4500);
+
+  try {
+    const page = await fetch(result.url, {
+      signal: controller.signal,
+      headers: {
+        Accept: "text/html,application/xhtml+xml",
+        "User-Agent": "AdmitQuest professor email matcher",
+      },
+    });
+
+    if (!page.ok) return result;
+    const html = await page.text();
+    const pageText = htmlToSearchableText(html).slice(0, 5000);
+    const email = extractEmails(`${html} ${pageText}`).find((candidate) =>
+      !/\.(png|jpe?g|gif|webp|svg)$/i.test(candidate),
+    ) || "";
+
+    return {
+      ...result,
+      email,
+      pageText,
+      snippet: [result.snippet, pageText.slice(0, 700)].filter(Boolean).join(" "),
+    };
+  } catch (error) {
+    return result;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export default async function handler(request, response) {
+  if (applyCors(request, response)) return;
+
   if (request.method !== "POST") {
     response.status(405).json({ error: "Use POST." });
     return;
@@ -94,6 +143,8 @@ export default async function handler(request, response) {
     const batches = await Promise.all(queries.map((query) => searchWeb(query, 6).catch(() => [])));
     const results = batches.flat();
     const deduped = [...new Map(results.map((result) => [result.url, result])).values()].slice(0, 24);
+    const enriched = await Promise.all(deduped.slice(0, 12).map(enrichResultWithPageEmail));
+    const searchEvidence = [...enriched, ...deduped.slice(12)];
     const focus = [...(profile.analysis?.possibleMajors || []), ...(profile.analysis?.interests || [])].join(", ");
     const location = [profile.city, profile.country].filter(Boolean).join(", ");
 
@@ -108,13 +159,13 @@ export default async function handler(request, response) {
           studentInterests: focus,
           location,
           resumeText: cleanText(profile.studentText, 6000),
-          searchResults: deduped,
+          searchResults: searchEvidence,
         }),
       });
     } catch (error) {
       ranked = {
         notes: "OpenAI ranking unavailable; using search-result ordering.",
-        professors: deduped.slice(0, 8).map((result, index) =>
+        professors: searchEvidence.slice(0, 8).map((result, index) =>
           fallbackProfessorFromResult(result, index, focus, location),
         ),
       };

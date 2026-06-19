@@ -1,0 +1,1 @@
+window.ADMITQUEST_API_BASE = window.ADMITQUEST_API_BASE || "";

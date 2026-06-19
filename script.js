@@ -26,6 +26,16 @@ const emailDraftPanel = document.querySelector("#emailDraftPanel");
 
 let latestAnalysis = null;
 let latestProfessors = [];
+const apiBase = String(window.ADMITQUEST_API_BASE || localStorage.getItem("admitquestApiBase") || "").replace(/\/$/, "");
+const isGithubPages = window.location.hostname.endsWith("github.io");
+
+function apiUrl(path) {
+  return apiBase ? `${apiBase}${path}` : path;
+}
+
+function hasServerApi() {
+  return Boolean(apiBase) || !isGithubPages;
+}
 
 function showAnalysisMode() {
   document.body.classList.add("analysis-mode");
@@ -387,7 +397,7 @@ function buildLocalAnalysis(text) {
 }
 
 async function summarizeWithApi(text) {
-  const response = await fetch("/api/summarize", {
+  const response = await fetch(apiUrl("/api/summarize"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -639,45 +649,14 @@ async function findResearchLabs() {
   }
 }
 
-function renderProfessorSetup(searchLinks = []) {
+function renderProfessorSetup(message = "Connect the backend to list professor emails and draft outreach.") {
   professorList.innerHTML = "";
   const card = document.createElement("article");
   card.className = "professor-card";
-  const city = cityInput.value.trim();
-  const country = countrySelect.value;
-  const interest = getSearchInterestPhrase();
-  const fallbackLinks = [
-    {
-      label: "Search professors",
-      query: `${interest} professor ${city} ${country}`,
-    },
-    {
-      label: "Search faculty labs",
-      query: `${interest} faculty research lab ${city} ${country}`,
-    },
-    {
-      label: "Find emails",
-      query: `${interest} professor email ${city} ${country}`,
-    },
-    {
-      label: "Student research",
-      query: `${interest} high school student research opportunity ${city} ${country}`,
-    },
-  ].filter((link) => link.query.trim().length > 0);
-  const links = (searchLinks.length ? searchLinks.slice(0, 4).map((link, index) => ({
-    label: ["Search professors", "Search faculty labs", "Find emails", "Student research"][index] || "Open search",
-    url: link.url,
-  })) : fallbackLinks.map((link) => ({
-    label: link.label,
-    url: makeSearchUrl(link.query),
-  }))).map((link) => `
-    <a href="${link.url}" target="_blank" rel="noreferrer">${escapeHtml(link.label)}</a>
-  `).join("");
 
   card.innerHTML = `
-    <h4>Professor search links</h4>
-    <p class="lab-note">Automatic professor matching is still a server-side feature. For now, these searches are built from the student's detected interests and location.</p>
-    <div class="professor-actions">${links || ""}</div>
+    <h4>Professor email search needs the backend</h4>
+    <p class="lab-note">${escapeHtml(message)}</p>
   `;
   professorList.appendChild(card);
 }
@@ -727,6 +706,12 @@ async function findProfessors() {
   const city = cityInput.value.trim();
   const country = countrySelect.value;
 
+  if (!hasServerApi()) {
+    renderProfessorSetup("GitHub Pages cannot run private search and AI keys. Deploy this repo on Vercel, add OPENAI_API_KEY plus TAVILY_API_KEY or SERPAPI_KEY, then set app-config.js to that Vercel URL.");
+    setProfessorStatus("Backend needed");
+    return;
+  }
+
   if (!city) {
     renderProfessorSetup();
     setProfessorStatus("Add city");
@@ -739,7 +724,7 @@ async function findProfessors() {
   emailDraftPanel.innerHTML = "";
 
   try {
-    const response = await fetch("/api/professors", {
+    const response = await fetch(apiUrl("/api/professors"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -755,16 +740,16 @@ async function findProfessors() {
     const data = await response.json();
 
     if (!response.ok) {
-      renderProfessorSetup(data.searchLinks || []);
-      setProfessorStatus("Search links");
+      renderProfessorSetup(data.error || "Professor email search could not run. Check the backend API keys.");
+      setProfessorStatus("Backend needed");
       return;
     }
 
     renderProfessors(data.professors || []);
     setProfessorStatus(`${data.professors?.length || 0} professors`);
   } catch (error) {
-    renderProfessorSetup();
-    setProfessorStatus("Search links");
+    renderProfessorSetup("The professor backend is not reachable yet. Check the Vercel deployment URL in app-config.js.");
+    setProfessorStatus("Backend needed");
   }
 }
 
@@ -776,7 +761,7 @@ async function draftProfessorEmail(professor) {
   `;
 
   try {
-    const response = await fetch("/api/draft-email", {
+    const response = await fetch(apiUrl("/api/draft-email"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

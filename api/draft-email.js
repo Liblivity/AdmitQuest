@@ -1,3 +1,4 @@
+import { applyCors } from "./http-utils.js";
 import { cleanText, openaiJson, searchWeb } from "./search-utils.js";
 
 const EMAIL_SCHEMA = {
@@ -23,6 +24,8 @@ const EMAIL_SCHEMA = {
 };
 
 export default async function handler(request, response) {
+  if (applyCors(request, response)) return;
+
   if (request.method !== "POST") {
     response.status(405).json({ error: "Use POST." });
     return;

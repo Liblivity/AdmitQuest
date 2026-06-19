@@ -47,3 +47,15 @@ Optional model override:
 ```text
 OPENAI_MODEL=gpt-4o-mini
 ```
+
+## Public Front End + Private Backend
+
+The professor email list and cold email drafts require a hosted backend. The easiest setup is to use the Vercel deployment URL as the public app URL.
+
+If you keep GitHub Pages as the public front end, deploy the same repo on Vercel for the API routes, then set `app-config.js`:
+
+```js
+window.ADMITQUEST_API_BASE = "https://your-vercel-project.vercel.app";
+```
+
+Do not put API keys in `app-config.js` or any browser file. Keep them in Vercel environment variables.

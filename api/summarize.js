@@ -1,3 +1,5 @@
+import { applyCors } from "./http-utils.js";
+
 const SUMMARY_SCHEMA = {
   type: "object",
   additionalProperties: false,
@@ -48,6 +50,8 @@ function cleanInput(text) {
 }
 
 export default async function handler(request, response) {
+  if (applyCors(request, response)) return;
+
   if (request.method !== "POST") {
     response.status(405).json({ error: "Use POST." });
     return;
