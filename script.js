@@ -18,7 +18,6 @@ const textPreview = document.querySelector("#textPreview");
 const countrySelect = document.querySelector("#countrySelect");
 const cityInput = document.querySelector("#cityInput");
 const radiusSelect = document.querySelector("#radiusSelect");
-const findLabsButton = document.querySelector("#findLabsButton");
 const labStatus = document.querySelector("#labStatus");
 const labList = document.querySelector("#labList");
 
@@ -604,11 +603,16 @@ async function findResearchLabs() {
   const radius = Number(radiusSelect.value);
 
   if (!city) {
-    setLabStatus("Add a city");
+    labList.innerHTML = `
+      <article class="lab-card">
+        <h4>Add a city to generate research leads</h4>
+        <p class="lab-note">Choose a country, enter a city or area, then run Analyze again.</p>
+      </article>
+    `;
+    setLabStatus("Location needed");
     return;
   }
 
-  findLabsButton.disabled = true;
   setLabStatus("Searching...");
   labList.innerHTML = "";
 
@@ -622,8 +626,6 @@ async function findResearchLabs() {
   } catch (error) {
     renderLabs([], city, country);
     setLabStatus("Search fallback");
-  } finally {
-    findLabsButton.disabled = false;
   }
 }
 
@@ -643,10 +645,12 @@ async function analyzeCurrentText() {
     const localAnalysis = buildLocalAnalysis(text);
     renderAnalysis(localAnalysis);
     setStatus("Local analysis complete");
+    findResearchLabs();
 
     const apiAnalysis = await summarizeWithApi(text);
     renderAnalysis({ ...apiAnalysis, words, extractedText: normalizeText(text) });
     setStatus("AI analysis complete");
+    findResearchLabs();
   } catch (error) {
     setStatus("Local analysis complete");
   } finally {
@@ -723,7 +727,6 @@ window.analyzeCurrentText = analyzeCurrentText;
 analyzeButton.addEventListener("click", analyzeCurrentText);
 editInputButton.addEventListener("click", showInputMode);
 editInputTopButton.addEventListener("click", showInputMode);
-findLabsButton.addEventListener("click", findResearchLabs);
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -746,6 +749,6 @@ form.addEventListener("reset", () => {
     latestAnalysis = null;
     showInputMode();
     setStatus("Ready");
-    setLabStatus("Not searched");
+    setLabStatus("Waiting for analysis");
   }, 0);
 });
