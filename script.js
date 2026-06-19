@@ -311,6 +311,7 @@ function renderChips(container, items, formatter) {
 }
 
 function renderEvidence(snippets) {
+  if (!evidenceList) return;
   evidenceList.innerHTML = "";
 
   if (snippets.length === 0) {
@@ -326,6 +327,7 @@ function renderEvidence(snippets) {
 }
 
 function renderList(container, items) {
+  if (!container) return;
   container.innerHTML = "";
 
   if (!items || items.length === 0) {
@@ -400,12 +402,12 @@ function renderAnalysis(analysis) {
   latestAnalysis = analysis;
   showAnalysisMode();
   wordCount.textContent = `${analysis.words} ${analysis.words === 1 ? "word" : "words"}`;
-  textPreview.textContent = (analysis.extractedText || textInput.value).slice(0, 4000);
-  summaryText.textContent = analysis.summary;
+  if (textPreview) textPreview.textContent = (analysis.extractedText || textInput.value).slice(0, 4000);
+  if (summaryText) summaryText.textContent = analysis.summary;
 
   renderChips(majorList, analysis.possibleMajors || [], (major) => major);
   renderChips(interestList, analysis.interests || [], (interest) => interest);
-  renderChips(keywordList, analysis.keywords || [], (keyword) => keyword);
+  if (keywordList) renderChips(keywordList, analysis.keywords || [], (keyword) => keyword);
   renderList(strengthList, analysis.strengths || []);
   renderList(weaknessList, analysis.weaknesses || []);
   renderEvidence(analysis.evidence || []);
@@ -737,15 +739,15 @@ form.addEventListener("reset", () => {
   window.setTimeout(() => {
     fileStatus.textContent = "No file selected";
     wordCount.textContent = "0 words";
-    summaryText.textContent = "Add a file or paste text, then run the reader to generate a summary.";
+    if (summaryText) summaryText.textContent = "Add a file or paste text, then run the reader to generate a summary.";
     majorList.innerHTML = "";
     interestList.innerHTML = "";
-    keywordList.innerHTML = "";
-    strengthList.innerHTML = "";
-    weaknessList.innerHTML = "";
-    evidenceList.innerHTML = "";
+    if (keywordList) keywordList.innerHTML = "";
+    if (strengthList) strengthList.innerHTML = "";
+    if (weaknessList) weaknessList.innerHTML = "";
+    if (evidenceList) evidenceList.innerHTML = "";
     labList.innerHTML = "";
-    textPreview.textContent = "";
+    if (textPreview) textPreview.textContent = "";
     latestAnalysis = null;
     showInputMode();
     setStatus("Ready");
