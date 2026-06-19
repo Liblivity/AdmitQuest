@@ -25,6 +25,11 @@ Old `.doc` files are not supported yet. Export them as `.docx` or paste the text
 - Top keywords
 - Evidence snippets
 - Extracted text preview
+- Nearby research lab and university leads by city/area
+
+## Research Lab Finder
+
+The lab finder uses public map data from OpenStreetMap/Nominatim and Overpass to locate nearby universities, laboratories, research institutes, and science organizations. Public map data can be incomplete, so the app also generates targeted search links based on the student's detected interests and selected location.
 
 ## AI Summary API
 

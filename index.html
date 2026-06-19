@@ -25,7 +25,7 @@
       <section class="hero">
         <div>
           <p class="eyebrow">Document To Direction</p>
-          <h2>Find the student’s academic direction from their writing.</h2>
+          <h2>Find the student's academic direction from their writing.</h2>
         </div>
         <p>
           Upload a resume, essay, activities list, or paste text directly. The reader summarizes
@@ -117,12 +117,62 @@
             <summary>Extracted text preview</summary>
             <pre id="textPreview"></pre>
           </details>
+
+          <section class="lab-finder">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Research Lab Finder</p>
+                <h3>Find nearby research opportunities</h3>
+              </div>
+              <span id="labStatus" class="count-pill">Not searched</span>
+            </div>
+
+            <div class="location-grid">
+              <label>
+                Country
+                <select id="countrySelect">
+                  <option value="United States" selected>United States</option>
+                  <option value="Canada">Canada</option>
+                  <option value="United Kingdom">United Kingdom</option>
+                  <option value="Australia">Australia</option>
+                  <option value="Singapore">Singapore</option>
+                  <option value="Taiwan">Taiwan</option>
+                  <option value="India">India</option>
+                  <option value="Other">Other</option>
+                </select>
+              </label>
+
+              <label>
+                City / Area
+                <input id="cityInput" type="text" placeholder="Example: Boston, Taipei, San Jose" />
+              </label>
+
+              <label>
+                Radius
+                <select id="radiusSelect">
+                  <option value="15000">15 km</option>
+                  <option value="30000" selected>30 km</option>
+                  <option value="50000">50 km</option>
+                  <option value="80000">80 km</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="actions">
+              <button type="button" id="findLabsButton" class="secondary-button">
+                Find Research Labs
+              </button>
+              <span class="helper-text">Run the interest reader first for better matching.</span>
+            </div>
+
+            <div id="labList" class="lab-list"></div>
+          </section>
         </section>
       </section>
     </main>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
-    <script src="script.js?v=8"></script>
+    <script src="script.js?v=10"></script>
   </body>
 </html>

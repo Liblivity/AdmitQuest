@@ -13,6 +13,14 @@ const strengthList = document.querySelector("#strengthList");
 const weaknessList = document.querySelector("#weaknessList");
 const evidenceList = document.querySelector("#evidenceList");
 const textPreview = document.querySelector("#textPreview");
+const countrySelect = document.querySelector("#countrySelect");
+const cityInput = document.querySelector("#cityInput");
+const radiusSelect = document.querySelector("#radiusSelect");
+const findLabsButton = document.querySelector("#findLabsButton");
+const labStatus = document.querySelector("#labStatus");
+const labList = document.querySelector("#labList");
+
+let latestAnalysis = null;
 
 const interestCategories = [
   {
@@ -95,6 +103,24 @@ const stopWords = new Set([
   "college",
   "application",
 ]);
+
+const labInterestKeywords = {
+  "Computer Science": ["computer", "computing", "software", "ai", "artificial intelligence", "data", "robotics", "informatics"],
+  "Computer Science and AI": ["computer", "computing", "software", "ai", "artificial intelligence", "data", "robotics", "informatics"],
+  "Mechanical Engineering": ["engineering", "mechanical", "robotics", "manufacturing", "design"],
+  Engineering: ["engineering", "robotics", "mechanical", "technology", "manufacturing", "design"],
+  "Engineering and Building": ["engineering", "robotics", "mechanical", "technology", "manufacturing", "design"],
+  "Data Science / Analytics": ["data", "analytics", "statistics", "informatics", "computing"],
+  "Medicine and Health": ["medical", "medicine", "health", "biology", "biomedical", "hospital"],
+  "Research and Discovery": ["research", "institute", "laboratory", "lab", "science"],
+  "Math and Quantitative Thinking": ["math", "mathematics", "statistics", "quantitative", "data"],
+};
+
+const overpassEndpoints = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+  "https://overpass.openstreetmap.ru/api/interpreter",
+];
 
 if (window.pdfjsLib) {
   window.pdfjsLib.GlobalWorkerOptions.workerSrc =
@@ -361,6 +387,7 @@ async function summarizeWithApi(text) {
 }
 
 function renderAnalysis(analysis) {
+  latestAnalysis = analysis;
   wordCount.textContent = `${analysis.words} ${analysis.words === 1 ? "word" : "words"}`;
   textPreview.textContent = (analysis.extractedText || textInput.value).slice(0, 4000);
   summaryText.textContent = analysis.summary;
@@ -371,6 +398,221 @@ function renderAnalysis(analysis) {
   renderList(strengthList, analysis.strengths || []);
   renderList(weaknessList, analysis.weaknesses || []);
   renderEvidence(analysis.evidence || []);
+}
+
+function getLabKeywords() {
+  const terms = new Set(["research", "lab", "laboratory", "institute", "university"]);
+  const sources = [...(latestAnalysis?.possibleMajors || []), ...(latestAnalysis?.interests || [])];
+
+  sources.forEach((source) => {
+    (labInterestKeywords[source] || [source]).forEach((term) => terms.add(term.toLowerCase()));
+  });
+
+  return [...terms].slice(0, 12);
+}
+
+function getSearchInterestPhrase() {
+  const source = latestAnalysis?.possibleMajors?.[0] || latestAnalysis?.interests?.[0] || "student research";
+  return source.replace(/\s*\/\s*/g, " ");
+}
+
+function setLabStatus(message) {
+  labStatus.textContent = message;
+}
+
+function makeSearchUrl(query) {
+  return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function normalizeUrl(url) {
+  if (!url) return "";
+  if (/^https?:\/\//i.test(url)) return url;
+  return `https://${url}`;
+}
+
+function makeMapsUrl(lat, lon, name) {
+  if (lat && lon) return `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=15/${lat}/${lon}`;
+  return makeSearchUrl(name);
+}
+
+async function geocodeLocation(city, country) {
+  const query = country === "Other" ? city : `${city}, ${country}`;
+  const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
+  const response = await fetch(url, {
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) throw new Error("Could not geocode location.");
+
+  const places = await response.json();
+  if (!places.length) throw new Error("Location not found.");
+
+  return {
+    label: places[0].display_name,
+    lat: Number(places[0].lat),
+    lon: Number(places[0].lon),
+  };
+}
+
+async function fetchNearbyResearchPlaces(lat, lon, radius) {
+  const query = `
+    [out:json][timeout:25];
+    (
+      nwr(around:${radius},${lat},${lon})["amenity"="university"];
+      nwr(around:${radius},${lat},${lon})["amenity"="college"];
+      nwr(around:${radius},${lat},${lon})["office"="research"];
+      nwr(around:${radius},${lat},${lon})["healthcare"="laboratory"];
+      nwr(around:${radius},${lat},${lon})["amenity"="laboratory"];
+    );
+    out center tags 40;
+  `;
+
+  let response = null;
+
+  for (const endpoint of overpassEndpoints) {
+    const url = `${endpoint}?data=${encodeURIComponent(query)}`;
+    try {
+      response = await fetch(url, {
+        headers: {
+          Accept: "application/json",
+        },
+      });
+      if (response.ok) break;
+    } catch (error) {
+      response = null;
+    }
+  }
+
+  if (!response?.ok) throw new Error("Map search failed.");
+
+  const data = await response.json();
+  return data.elements || [];
+}
+
+function elementToLab(element, locationLabel) {
+  const tags = element.tags || {};
+  const name = tags.name || tags["official_name"] || tags["operator"] || "Unnamed research place";
+  const lat = element.lat || element.center?.lat;
+  const lon = element.lon || element.center?.lon;
+  const type =
+    tags.amenity ||
+    tags.office ||
+    tags.healthcare ||
+    tags.tourism ||
+    "research-related place";
+
+  return {
+    id: `${element.type}-${element.id}`,
+    name,
+    type: String(type).replace(/_/g, " "),
+    website: normalizeUrl(tags.website || tags["contact:website"] || ""),
+    lat,
+    lon,
+    locationLabel,
+    rawText: `${name} ${type} ${tags.operator || ""} ${tags.description || ""}`.toLowerCase(),
+  };
+}
+
+function rankLabs(labs, keywords) {
+  const seen = new Set();
+
+  return labs
+    .filter((lab) => {
+      const key = lab.name.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return lab.name !== "Unnamed research place";
+    })
+    .map((lab) => {
+      const score = keywords.reduce((total, keyword) => total + (lab.rawText.includes(keyword) ? 2 : 0), 0);
+      const researchScore = /research|lab|laboratory|institute|university|college/.test(lab.rawText) ? 3 : 0;
+      return { ...lab, score: score + researchScore };
+    })
+    .sort((a, b) => b.score - a.score || a.name.localeCompare(b.name))
+    .slice(0, 12);
+}
+
+function renderLabs(labs, city, country) {
+  labList.innerHTML = "";
+  const interestPhrase = getSearchInterestPhrase();
+
+  if (labs.length === 0) {
+    const card = document.createElement("article");
+    card.className = "lab-card";
+    card.innerHTML = `
+      <h4>No mapped labs found yet</h4>
+      <p class="lab-note">Public map data can be sparse. Use these targeted searches instead.</p>
+      <div class="lab-actions">
+        <a href="${makeSearchUrl(`${interestPhrase} research lab ${city} ${country}`)}" target="_blank" rel="noreferrer">Search labs</a>
+        <a href="${makeSearchUrl(`${interestPhrase} professor research ${city} ${country}`)}" target="_blank" rel="noreferrer">Search professors</a>
+        <a href="${makeSearchUrl(`${interestPhrase} internship ${city} ${country} high school`)}" target="_blank" rel="noreferrer">Search internships</a>
+      </div>
+    `;
+    labList.appendChild(card);
+    return;
+  }
+
+  labs.forEach((lab) => {
+    const card = document.createElement("article");
+    card.className = "lab-card";
+    const searchQuery = `${lab.name} ${interestPhrase} research opportunities`;
+    const safeName = escapeHtml(lab.name);
+    const safeType = escapeHtml(lab.type);
+    card.innerHTML = `
+      <h4>${safeName}</h4>
+      <div class="lab-meta">
+        <span>${safeType}</span>
+        <span>${lab.score > 3 ? "Interest match" : "Nearby research place"}</span>
+      </div>
+      <p class="lab-note">Use this as a lead: check faculty pages, lab websites, summer programs, and outreach/contact pages.</p>
+      <div class="lab-actions">
+        ${lab.website ? `<a href="${lab.website}" target="_blank" rel="noreferrer">Website</a>` : ""}
+        <a href="${makeMapsUrl(lab.lat, lab.lon, lab.name)}" target="_blank" rel="noreferrer">Map</a>
+        <a href="${makeSearchUrl(searchQuery)}" target="_blank" rel="noreferrer">Research match</a>
+      </div>
+    `;
+    labList.appendChild(card);
+  });
+}
+
+async function findResearchLabs() {
+  const city = cityInput.value.trim();
+  const country = countrySelect.value;
+  const radius = Number(radiusSelect.value);
+
+  if (!city) {
+    setLabStatus("Add a city");
+    return;
+  }
+
+  findLabsButton.disabled = true;
+  setLabStatus("Searching...");
+  labList.innerHTML = "";
+
+  try {
+    const place = await geocodeLocation(city, country);
+    const elements = await fetchNearbyResearchPlaces(place.lat, place.lon, radius);
+    const labs = elements.map((element) => elementToLab(element, place.label));
+    const ranked = rankLabs(labs, getLabKeywords());
+    renderLabs(ranked, city, country);
+    setLabStatus(`${ranked.length} leads`);
+  } catch (error) {
+    renderLabs([], city, country);
+    setLabStatus("Search fallback");
+  } finally {
+    findLabsButton.disabled = false;
+  }
 }
 
 async function analyzeCurrentText() {
@@ -467,6 +709,7 @@ fileInput.addEventListener("change", async () => {
 window.analyzeCurrentText = analyzeCurrentText;
 
 analyzeButton.addEventListener("click", analyzeCurrentText);
+findLabsButton.addEventListener("click", findResearchLabs);
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -484,7 +727,9 @@ form.addEventListener("reset", () => {
     strengthList.innerHTML = "";
     weaknessList.innerHTML = "";
     evidenceList.innerHTML = "";
+    labList.innerHTML = "";
     textPreview.textContent = "";
     setStatus("Ready");
+    setLabStatus("Not searched");
   }, 0);
 });
