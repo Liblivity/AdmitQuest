@@ -114,7 +114,8 @@ textarea {
 
 .workbench {
   display: grid;
-  grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.1fr);
+  grid-template-columns: minmax(0, 940px);
+  justify-content: center;
   gap: 16px;
   margin-top: 16px;
 }
@@ -124,7 +125,7 @@ textarea {
 }
 
 .analysis-mode .workbench {
-  grid-template-columns: minmax(260px, 0.36fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1080px);
 }
 
 .analysis-mode .results-panel {
@@ -139,33 +140,14 @@ textarea {
   padding: 18px;
 }
 
-body:not(.analysis-mode) .workbench {
-  grid-template-columns: minmax(0, 760px);
-  justify-content: center;
-}
-
 body:not(.analysis-mode) .results-panel,
 body:not(.analysis-mode) #editInputButton,
 body:not(.analysis-mode) #editInputTopButton {
   display: none;
 }
 
-.analysis-mode .input-fields {
-  display: none;
-}
-
 .analysis-mode .input-panel {
-  position: sticky;
-  top: 16px;
-}
-
-.analysis-mode .input-panel .panel-heading h3 {
-  font-size: 0;
-}
-
-.analysis-mode .input-panel .panel-heading h3::after {
-  content: "Location and controls";
-  font-size: 1.08rem;
+  display: none;
 }
 
 .panel-heading {
@@ -436,10 +418,6 @@ textarea:focus {
   gap: 12px;
 }
 
-.analysis-mode .location-grid {
-  grid-template-columns: 1fr;
-}
-
 .lab-list {
   display: grid;
   gap: 12px;
@@ -511,9 +489,6 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 
-  .analysis-mode .input-panel {
-    position: static;
-  }
 }
 
 @media (max-width: 560px) {
