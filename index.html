@@ -43,25 +43,66 @@
             <button type="reset" class="ghost-button">Clear</button>
           </div>
 
-          <label class="upload-box" for="fileInput">
-            <input id="fileInput" type="file" accept=".pdf,.doc,.docx,.txt,.md,.rtf" />
-            <strong>Choose PDF, DOCX, TXT, MD, or RTF</strong>
-            <span id="fileStatus">No file selected</span>
-          </label>
+          <div id="inputFields" class="input-fields">
+            <label class="upload-box" for="fileInput">
+              <input id="fileInput" type="file" accept=".pdf,.doc,.docx,.txt,.md,.rtf" />
+              <strong>Choose PDF, DOCX, TXT, MD, or RTF</strong>
+              <span id="fileStatus">No file selected</span>
+            </label>
 
-          <label>
-            Paste text
-            <textarea
-              id="textInput"
-              rows="14"
-              placeholder="Paste an essay, activities list, resume, brag sheet, transcript notes, or any student writing here..."
-            ></textarea>
-          </label>
+            <label>
+              Paste text
+              <textarea
+                id="textInput"
+                rows="14"
+                placeholder="Paste an essay, activities list, resume, brag sheet, transcript notes, or any student writing here..."
+              ></textarea>
+            </label>
+          </div>
+
+          <section class="location-setup">
+            <div>
+              <p class="eyebrow">Location</p>
+              <h3>Research search area</h3>
+            </div>
+
+            <div class="location-grid">
+              <label>
+                Country
+                <select id="countrySelect">
+                  <option value="United States" selected>United States</option>
+                  <option value="Canada">Canada</option>
+                  <option value="United Kingdom">United Kingdom</option>
+                  <option value="Australia">Australia</option>
+                  <option value="Singapore">Singapore</option>
+                  <option value="Taiwan">Taiwan</option>
+                  <option value="India">India</option>
+                  <option value="Other">Other</option>
+                </select>
+              </label>
+
+              <label>
+                City / Area
+                <input id="cityInput" type="text" placeholder="Example: Boston, Taipei, San Jose" />
+              </label>
+
+              <label>
+                Radius
+                <select id="radiusSelect">
+                  <option value="15000">15 km</option>
+                  <option value="30000" selected>30 km</option>
+                  <option value="50000">50 km</option>
+                  <option value="80000">80 km</option>
+                </select>
+              </label>
+            </div>
+          </section>
 
           <div class="actions">
             <button type="button" id="analyzeButton" class="primary-button" onclick="window.analyzeCurrentText?.()">
               Analyze Interests
             </button>
+            <button type="button" id="editInputButton" class="ghost-button">Edit input</button>
             <span id="readerStatus" role="status">Ready</span>
           </div>
         </form>
@@ -72,7 +113,10 @@
               <p class="eyebrow">Summary</p>
               <h3>Student interest read</h3>
             </div>
-            <span id="wordCount" class="count-pill">0 words</span>
+            <div class="heading-actions">
+              <button type="button" id="editInputTopButton" class="ghost-button">Edit input</button>
+              <span id="wordCount" class="count-pill">0 words</span>
+            </div>
           </div>
 
           <div class="summary-card">
@@ -138,42 +182,11 @@
               <span id="labStatus" class="count-pill">Not searched</span>
             </div>
 
-            <div class="location-grid">
-              <label>
-                Country
-                <select id="countrySelect">
-                  <option value="United States" selected>United States</option>
-                  <option value="Canada">Canada</option>
-                  <option value="United Kingdom">United Kingdom</option>
-                  <option value="Australia">Australia</option>
-                  <option value="Singapore">Singapore</option>
-                  <option value="Taiwan">Taiwan</option>
-                  <option value="India">India</option>
-                  <option value="Other">Other</option>
-                </select>
-              </label>
-
-              <label>
-                City / Area
-                <input id="cityInput" type="text" placeholder="Example: Boston, Taipei, San Jose" />
-              </label>
-
-              <label>
-                Radius
-                <select id="radiusSelect">
-                  <option value="15000">15 km</option>
-                  <option value="30000" selected>30 km</option>
-                  <option value="50000">50 km</option>
-                  <option value="80000">80 km</option>
-                </select>
-              </label>
-            </div>
-
             <div class="actions">
               <button type="button" id="findLabsButton" class="secondary-button">
                 Find Research Labs
               </button>
-              <span class="helper-text">Run the interest reader first for better matching.</span>
+              <span class="helper-text">Uses the selected location and detected interests.</span>
             </div>
 
             <div id="labList" class="lab-list"></div>
@@ -184,6 +197,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
-    <script src="script.js?v=10"></script>
+    <script src="script.js?v=12"></script>
   </body>
 </html>

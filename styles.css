@@ -119,6 +119,18 @@ textarea {
   margin-top: 16px;
 }
 
+.results-panel {
+  display: none;
+}
+
+.analysis-mode .workbench {
+  grid-template-columns: minmax(260px, 0.36fr) minmax(0, 1fr);
+}
+
+.analysis-mode .results-panel {
+  display: grid;
+}
+
 .input-panel,
 .results-panel {
   display: grid;
@@ -127,11 +139,47 @@ textarea {
   padding: 18px;
 }
 
+body:not(.analysis-mode) .workbench {
+  grid-template-columns: minmax(0, 760px);
+  justify-content: center;
+}
+
+body:not(.analysis-mode) .results-panel,
+body:not(.analysis-mode) #editInputButton,
+body:not(.analysis-mode) #editInputTopButton {
+  display: none;
+}
+
+.analysis-mode .input-fields {
+  display: none;
+}
+
+.analysis-mode .input-panel {
+  position: sticky;
+  top: 16px;
+}
+
+.analysis-mode .input-panel .panel-heading h3 {
+  font-size: 0;
+}
+
+.analysis-mode .input-panel .panel-heading h3::after {
+  content: "Location and controls";
+  font-size: 1.08rem;
+}
+
 .panel-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .panel-heading h3 {
@@ -143,6 +191,11 @@ label {
   gap: 7px;
   font-size: 0.86rem;
   font-weight: 800;
+}
+
+.input-fields {
+  display: grid;
+  gap: 16px;
 }
 
 input,
@@ -201,6 +254,15 @@ textarea:focus {
   color: var(--muted);
   font-size: 0.84rem;
   font-weight: 600;
+}
+
+.location-setup {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffefa;
 }
 
 .actions {
@@ -374,6 +436,10 @@ textarea:focus {
   gap: 12px;
 }
 
+.analysis-mode .location-grid {
+  grid-template-columns: 1fr;
+}
+
 .lab-list {
   display: grid;
   gap: 12px;
@@ -443,6 +509,10 @@ textarea:focus {
   .location-grid,
   .result-grid {
     grid-template-columns: 1fr;
+  }
+
+  .analysis-mode .input-panel {
+    position: static;
   }
 }
 

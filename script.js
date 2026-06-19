@@ -1,5 +1,7 @@
 const form = document.querySelector("#readerForm");
 const analyzeButton = document.querySelector("#analyzeButton");
+const editInputButton = document.querySelector("#editInputButton");
+const editInputTopButton = document.querySelector("#editInputTopButton");
 const fileInput = document.querySelector("#fileInput");
 const fileStatus = document.querySelector("#fileStatus");
 const textInput = document.querySelector("#textInput");
@@ -21,6 +23,15 @@ const labStatus = document.querySelector("#labStatus");
 const labList = document.querySelector("#labList");
 
 let latestAnalysis = null;
+
+function showAnalysisMode() {
+  document.body.classList.add("analysis-mode");
+}
+
+function showInputMode() {
+  document.body.classList.remove("analysis-mode");
+  textInput.focus();
+}
 
 const interestCategories = [
   {
@@ -388,6 +399,7 @@ async function summarizeWithApi(text) {
 
 function renderAnalysis(analysis) {
   latestAnalysis = analysis;
+  showAnalysisMode();
   wordCount.textContent = `${analysis.words} ${analysis.words === 1 ? "word" : "words"}`;
   textPreview.textContent = (analysis.extractedText || textInput.value).slice(0, 4000);
   summaryText.textContent = analysis.summary;
@@ -709,6 +721,8 @@ fileInput.addEventListener("change", async () => {
 window.analyzeCurrentText = analyzeCurrentText;
 
 analyzeButton.addEventListener("click", analyzeCurrentText);
+editInputButton.addEventListener("click", showInputMode);
+editInputTopButton.addEventListener("click", showInputMode);
 findLabsButton.addEventListener("click", findResearchLabs);
 
 form.addEventListener("submit", (event) => {
@@ -729,6 +743,8 @@ form.addEventListener("reset", () => {
     evidenceList.innerHTML = "";
     labList.innerHTML = "";
     textPreview.textContent = "";
+    latestAnalysis = null;
+    showInputMode();
     setStatus("Ready");
     setLabStatus("Not searched");
   }, 0);
