@@ -20,8 +20,12 @@ const cityInput = document.querySelector("#cityInput");
 const radiusSelect = document.querySelector("#radiusSelect");
 const labStatus = document.querySelector("#labStatus");
 const labList = document.querySelector("#labList");
+const professorStatus = document.querySelector("#professorStatus");
+const professorList = document.querySelector("#professorList");
+const emailDraftPanel = document.querySelector("#emailDraftPanel");
 
 let latestAnalysis = null;
+let latestProfessors = [];
 
 function showAnalysisMode() {
   document.body.classList.add("analysis-mode");
@@ -433,6 +437,10 @@ function setLabStatus(message) {
   labStatus.textContent = message;
 }
 
+function setProfessorStatus(message) {
+  professorStatus.textContent = message;
+}
+
 function makeSearchUrl(query) {
   return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
 }
@@ -631,6 +639,146 @@ async function findResearchLabs() {
   }
 }
 
+function renderProfessorSetup(searchLinks = []) {
+  professorList.innerHTML = "";
+  const card = document.createElement("article");
+  card.className = "professor-card";
+  const links = searchLinks.slice(0, 4).map((link) => `
+    <a href="${link.url}" target="_blank" rel="noreferrer">${escapeHtml(link.query)}</a>
+  `).join("");
+
+  card.innerHTML = `
+    <h4>Professor search needs a server-side search API</h4>
+    <p class="lab-note">Deploy on Vercel with TAVILY_API_KEY or SERPAPI_KEY to automatically find professor emails and rank compatibility.</p>
+    <div class="professor-actions">${links || ""}</div>
+  `;
+  professorList.appendChild(card);
+}
+
+function renderProfessors(professors) {
+  latestProfessors = professors;
+  professorList.innerHTML = "";
+  emailDraftPanel.classList.remove("is-visible");
+  emailDraftPanel.innerHTML = "";
+
+  if (!professors.length) {
+    renderProfessorSetup();
+    setProfessorStatus("No leads");
+    return;
+  }
+
+  professors.forEach((professor, index) => {
+    const card = document.createElement("article");
+    card.className = "professor-card";
+    const emailText = professor.email ? escapeHtml(professor.email) : "Email not found";
+    const compatibility = Math.max(0, Math.min(100, Number(professor.compatibility) || 0));
+    card.innerHTML = `
+      <h4>${escapeHtml(professor.name)}</h4>
+      <div class="lab-meta">
+        <span>${escapeHtml(professor.institution || "Institution unknown")}</span>
+        <span>${escapeHtml(professor.department || "Department unknown")}</span>
+        <span>${compatibility}% match</span>
+      </div>
+      <div class="compatibility-bar" aria-hidden="true">
+        <div class="compatibility-fill" style="--compatibility: ${compatibility}%"></div>
+      </div>
+      <p class="lab-note">${escapeHtml(professor.compatibilityReason || professor.researchFit || "Open profile to confirm fit.")}</p>
+      <div class="lab-meta">
+        <span>${emailText}</span>
+      </div>
+      <div class="professor-actions">
+        ${professor.profileUrl ? `<a href="${professor.profileUrl}" target="_blank" rel="noreferrer">Profile</a>` : ""}
+        ${professor.email ? `<a href="mailto:${professor.email}">Email</a>` : `<a href="${professor.emailSearchUrl}" target="_blank" rel="noreferrer">Find email</a>`}
+        <button type="button" data-professor-index="${index}">Draft email</button>
+      </div>
+    `;
+    professorList.appendChild(card);
+  });
+}
+
+async function findProfessors() {
+  const city = cityInput.value.trim();
+  const country = countrySelect.value;
+
+  if (!city) {
+    renderProfessorSetup();
+    setProfessorStatus("Location needed");
+    return;
+  }
+
+  setProfessorStatus("Searching...");
+  professorList.innerHTML = "";
+  emailDraftPanel.classList.remove("is-visible");
+  emailDraftPanel.innerHTML = "";
+
+  try {
+    const response = await fetch("/api/professors", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        city,
+        country,
+        analysis: latestAnalysis,
+        studentText: textInput.value,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      renderProfessorSetup(data.searchLinks || []);
+      setProfessorStatus("API setup needed");
+      return;
+    }
+
+    renderProfessors(data.professors || []);
+    setProfessorStatus(`${data.professors?.length || 0} professors`);
+  } catch (error) {
+    renderProfessorSetup();
+    setProfessorStatus("API setup needed");
+  }
+}
+
+async function draftProfessorEmail(professor) {
+  emailDraftPanel.classList.add("is-visible");
+  emailDraftPanel.innerHTML = `
+    <p class="eyebrow">Cold Email Draft</p>
+    <p class="lab-note">Researching ${escapeHtml(professor.name)} and drafting...</p>
+  `;
+
+  try {
+    const response = await fetch("/api/draft-email", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        professor,
+        analysis: latestAnalysis,
+        studentText: textInput.value,
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Draft failed");
+
+    emailDraftPanel.innerHTML = `
+      <p class="eyebrow">Cold Email Draft</p>
+      <h4>${escapeHtml(data.subject)}</h4>
+      <p class="lab-note">${escapeHtml(data.professorSummary)}</p>
+      <pre>${escapeHtml(data.email)}</pre>
+    `;
+  } catch (error) {
+    emailDraftPanel.innerHTML = `
+      <p class="eyebrow">Cold Email Draft</p>
+      <h4>Draft API setup needed</h4>
+      <p class="lab-note">Deploy on Vercel with OPENAI_API_KEY to research professors and generate tailored email drafts.</p>
+    `;
+  }
+}
+
 async function analyzeCurrentText() {
   const text = textInput.value;
   const words = countWords(text);
@@ -648,11 +796,13 @@ async function analyzeCurrentText() {
     renderAnalysis(localAnalysis);
     setStatus("Local analysis complete");
     findResearchLabs();
+    findProfessors();
 
     const apiAnalysis = await summarizeWithApi(text);
     renderAnalysis({ ...apiAnalysis, words, extractedText: normalizeText(text) });
     setStatus("AI analysis complete");
     findResearchLabs();
+    findProfessors();
   } catch (error) {
     setStatus("Local analysis complete");
   } finally {
@@ -729,6 +879,12 @@ window.analyzeCurrentText = analyzeCurrentText;
 analyzeButton.addEventListener("click", analyzeCurrentText);
 editInputButton.addEventListener("click", showInputMode);
 editInputTopButton.addEventListener("click", showInputMode);
+professorList.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-professor-index]");
+  if (!button) return;
+  const professor = latestProfessors[Number(button.dataset.professorIndex)];
+  if (professor) draftProfessorEmail(professor);
+});
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -747,10 +903,15 @@ form.addEventListener("reset", () => {
     if (weaknessList) weaknessList.innerHTML = "";
     if (evidenceList) evidenceList.innerHTML = "";
     labList.innerHTML = "";
+    professorList.innerHTML = "";
+    emailDraftPanel.classList.remove("is-visible");
+    emailDraftPanel.innerHTML = "";
     if (textPreview) textPreview.textContent = "";
     latestAnalysis = null;
+    latestProfessors = [];
     showInputMode();
     setStatus("Ready");
     setLabStatus("Waiting for analysis");
+    setProfessorStatus("Waiting for analysis");
   }, 0);
 });

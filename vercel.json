@@ -3,6 +3,14 @@
     {
       "source": "/api/summarize",
       "destination": "/api/summarize.js"
+    },
+    {
+      "source": "/api/professors",
+      "destination": "/api/professors.js"
+    },
+    {
+      "source": "/api/draft-email",
+      "destination": "/api/draft-email.js"
     }
   ]
 }
