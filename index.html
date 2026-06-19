@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AdmitQuest</title>
+    <title>AdmitQuest Reader</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -14,196 +14,98 @@
   </head>
   <body>
     <main class="app-shell">
-      <section class="workspace">
-        <header class="topbar">
-          <div>
-            <p class="eyebrow">Admissions RPG Builder</p>
-            <h1>AdmitQuest</h1>
-          </div>
-          <div class="status-pill">
-            <span class="pulse"></span>
-            Prototype v0
-          </div>
-        </header>
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Student Interest Reader</p>
+          <h1>AdmitQuest</h1>
+        </div>
+        <span class="status-pill">Simple prototype</span>
+      </header>
 
-        <section class="hero">
-          <div class="hero-copy">
-            <p class="eyebrow">Summon Your Applicant Build</p>
-            <h2>Turn a college application into stats, roasts, and quests.</h2>
-            <p>
-              Enter a quick profile and get an RPG-style read on academic power,
-              leadership, impact, major alignment, and narrative strength.
+      <section class="hero">
+        <div>
+          <p class="eyebrow">Document To Direction</p>
+          <h2>Upload writing or paste text. Get a quick read on what the student seems drawn to.</h2>
+        </div>
+        <p>
+          This first version looks for recurring subjects, activities, values, and evidence in a
+          student's text. It is intentionally simple: no scoring, no monsters, no admissions odds.
+        </p>
+      </section>
+
+      <section class="workbench">
+        <form id="readerForm" class="input-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Input</p>
+              <h3>Upload a file or paste text</h3>
+            </div>
+            <button type="reset" class="ghost-button">Clear</button>
+          </div>
+
+          <label class="upload-box" for="fileInput">
+            <input id="fileInput" type="file" accept=".pdf,.doc,.docx,.txt,.md,.rtf" />
+            <strong>Choose PDF, DOCX, TXT, MD, or RTF</strong>
+            <span id="fileStatus">No file selected</span>
+          </label>
+
+          <label>
+            Paste text
+            <textarea
+              id="textInput"
+              rows="14"
+              placeholder="Paste an essay, activities list, resume, brag sheet, transcript notes, or any student writing here..."
+            ></textarea>
+          </label>
+
+          <div class="actions">
+            <button type="submit" class="primary-button">Analyze Interests</button>
+            <span id="readerStatus" role="status">Ready</span>
+          </div>
+        </form>
+
+        <section class="results-panel" aria-live="polite">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Summary</p>
+              <h3>Student interest read</h3>
+            </div>
+            <span id="wordCount" class="count-pill">0 words</span>
+          </div>
+
+          <div class="summary-card">
+            <p id="summaryText">
+              Add a file or paste text, then run the reader to generate a summary.
             </p>
           </div>
-          <div class="mascot-panel" id="monsterPanel" aria-label="Applicant monster avatar panel">
-            <div class="monster-avatar goblin" id="monsterAvatar" aria-hidden="true">
-              <div class="horn horn-left"></div>
-              <div class="horn horn-right"></div>
-              <div class="ear ear-left"></div>
-              <div class="ear ear-right"></div>
-              <div class="face">
-                <div class="brow brow-left"></div>
-                <div class="brow brow-right"></div>
-                <div class="eye eye-left"></div>
-                <div class="eye eye-right"></div>
-                <div class="nose"></div>
-                <div class="mouth"></div>
-                <div class="fang fang-left"></div>
-                <div class="fang fang-right"></div>
-              </div>
+
+          <div class="result-grid">
+            <div class="result-block">
+              <p class="eyebrow">Likely Interests</p>
+              <div id="interestList" class="chip-list"></div>
             </div>
-            <div class="speech">
-              <strong id="monsterName">Admissions Goblin</strong>
-              <span id="introRoast">Ready to judge your extracurricular soup.</span>
+
+            <div class="result-block">
+              <p class="eyebrow">Top Keywords</p>
+              <div id="keywordList" class="chip-list"></div>
             </div>
           </div>
+
+          <div class="result-block">
+            <p class="eyebrow">Evidence Snippets</p>
+            <ul id="evidenceList" class="evidence-list"></ul>
+          </div>
+
+          <details class="text-preview">
+            <summary>Extracted text preview</summary>
+            <pre id="textPreview"></pre>
+          </details>
         </section>
-
-        <div class="content-grid">
-          <form id="profileForm" class="builder" autocomplete="off">
-            <div class="panel-title">
-              <div>
-                <p class="eyebrow">Player Sheet</p>
-                <h3>Tell the Goblin your stats</h3>
-              </div>
-              <button class="icon-button" type="reset" aria-label="Reset form" title="Reset">
-                ↺
-              </button>
-            </div>
-
-            <div class="field-grid">
-              <label>
-                Grade
-                <select id="grade">
-                  <option value="9">9th</option>
-                  <option value="10">10th</option>
-                  <option value="11" selected>11th</option>
-                  <option value="12">12th</option>
-                </select>
-              </label>
-
-              <label>
-                Intended Major
-                <select id="major">
-                  <option value="Computer Science">Computer Science</option>
-                  <option value="Engineering">Engineering</option>
-                  <option value="Pre-Med">Pre-Med</option>
-                  <option value="Business">Business</option>
-                  <option value="Physics">Physics</option>
-                  <option value="Undecided">Undecided</option>
-                </select>
-              </label>
-            </div>
-
-            <div class="field-grid">
-              <label>
-                GPA
-                <input id="gpa" type="number" min="0" max="4" step="0.01" value="3.78" />
-              </label>
-
-              <label>
-                AP / IB / Honors Count
-                <input id="rigor" type="number" min="0" max="20" step="1" value="6" />
-              </label>
-            </div>
-
-            <label>
-              Activities
-              <textarea
-                id="activities"
-                rows="5"
-                placeholder="Example: NHS, robotics, tutoring, research, business club"
-              >NHS, Key Club, robotics, tutoring younger students</textarea>
-            </label>
-
-            <label>
-              Awards
-              <textarea
-                id="awards"
-                rows="3"
-                placeholder="Example: Science fair finalist, DECA state qualifier"
-              >Honor roll, regional robotics qualifier</textarea>
-            </label>
-
-            <label>
-              Target School Tier
-              <select id="targetTier">
-                <option value="Top 20">Top 20</option>
-                <option value="Top 50" selected>Top 50</option>
-                <option value="Strong State School">Strong State School</option>
-                <option value="Scholarship Maxing">Scholarship Maxing</option>
-              </select>
-            </label>
-
-            <button class="primary-button" type="submit">Generate Build</button>
-          </form>
-
-          <section class="results" aria-live="polite">
-            <div class="result-header">
-              <div>
-                <p class="eyebrow">Applicant Build</p>
-                <h3 id="buildTitle">Computer Science Applicant Lv. 8</h3>
-              </div>
-              <span id="readinessBadge" class="readiness">Top 50 Ready-ish</span>
-            </div>
-
-            <div class="monster-card">
-              <div class="monster-token">
-                <div class="monster-avatar goblin compact" id="monsterRankAvatar" aria-hidden="true">
-                  <div class="horn horn-left"></div>
-                  <div class="horn horn-right"></div>
-                  <div class="ear ear-left"></div>
-                  <div class="ear ear-right"></div>
-                  <div class="face">
-                    <div class="brow brow-left"></div>
-                    <div class="brow brow-right"></div>
-                    <div class="eye eye-left"></div>
-                    <div class="eye eye-right"></div>
-                    <div class="nose"></div>
-                    <div class="mouth"></div>
-                    <div class="fang fang-left"></div>
-                    <div class="fang fang-right"></div>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <p class="eyebrow">Monster Rank</p>
-                <h3 id="monsterRankName">Admissions Goblin</h3>
-                <p id="monsterRankLine">
-                  Functional applicant detected. The goblin remains unimpressed, but awake.
-                </p>
-              </div>
-              <div class="monster-score">
-                <span id="monsterScore">0</span>
-                <small>strength</small>
-              </div>
-            </div>
-
-            <div class="stats-list" id="statsList"></div>
-
-            <div class="verdict">
-              <p class="eyebrow" id="verdictLabel">Goblin Verdict</p>
-              <blockquote id="verdictText">
-                You have enough STEM energy to scare a guidance counselor, but your leadership
-                stat is currently decorative.
-              </blockquote>
-            </div>
-
-            <div class="quests">
-              <div class="panel-title">
-                <div>
-                  <p class="eyebrow">Quest Roadmap</p>
-                  <h3>Next moves</h3>
-                </div>
-                <span id="questCount">4 quests</span>
-              </div>
-              <ol id="questList" class="quest-roadmap"></ol>
-            </div>
-          </section>
-        </div>
       </section>
     </main>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
     <script src="script.js"></script>
   </body>
 </html>

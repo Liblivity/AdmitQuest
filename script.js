@@ -1,452 +1,310 @@
-const form = document.querySelector("#profileForm");
-const statsList = document.querySelector("#statsList");
-const buildTitle = document.querySelector("#buildTitle");
-const readinessBadge = document.querySelector("#readinessBadge");
-const verdictText = document.querySelector("#verdictText");
-const questList = document.querySelector("#questList");
-const questCount = document.querySelector("#questCount");
-const introRoast = document.querySelector("#introRoast");
-const monsterAvatar = document.querySelector("#monsterAvatar");
-const monsterName = document.querySelector("#monsterName");
-const monsterPanel = document.querySelector("#monsterPanel");
-const verdictLabel = document.querySelector("#verdictLabel");
-const monsterRankName = document.querySelector("#monsterRankName");
-const monsterRankLine = document.querySelector("#monsterRankLine");
-const monsterScore = document.querySelector("#monsterScore");
-const monsterRankAvatar = document.querySelector("#monsterRankAvatar");
+const form = document.querySelector("#readerForm");
+const fileInput = document.querySelector("#fileInput");
+const fileStatus = document.querySelector("#fileStatus");
+const textInput = document.querySelector("#textInput");
+const readerStatus = document.querySelector("#readerStatus");
+const wordCount = document.querySelector("#wordCount");
+const summaryText = document.querySelector("#summaryText");
+const interestList = document.querySelector("#interestList");
+const keywordList = document.querySelector("#keywordList");
+const evidenceList = document.querySelector("#evidenceList");
+const textPreview = document.querySelector("#textPreview");
 
-const monsterRanks = [
+const interestCategories = [
   {
-    min: 0,
-    className: "sprout",
-    name: "Application Sprout",
-    badge: "Training Arc",
-    line: "Tiny, ambitious, and one stiff breeze away from a gap in the activities list.",
+    name: "Computer Science and AI",
+    terms: ["code", "coding", "programming", "software", "computer science", "ai", "machine learning", "algorithm", "robotics", "app", "website", "data"],
   },
   {
-    min: 45,
-    className: "goblin",
-    name: "Admissions Goblin",
-    badge: "Needs Loot",
-    line: "Functional applicant detected. The goblin remains unimpressed, but awake.",
+    name: "Engineering and Building",
+    terms: ["engineering", "build", "designed", "prototype", "robot", "cad", "mechanical", "electrical", "circuit", "device", "manufacturing"],
   },
   {
-    min: 62,
-    className: "troll",
-    name: "Transcript Troll",
-    badge: "Competitive",
-    line: "Solid stats, decent story, and only a few suspiciously ornamental activities.",
+    name: "Medicine and Health",
+    terms: ["medicine", "medical", "health", "doctor", "hospital", "clinic", "patient", "biology", "neuroscience", "public health", "care"],
   },
   {
-    min: 76,
-    className: "drake",
-    name: "Honors Drake",
-    badge: "Strong Build",
-    line: "This application has claws. Now sharpen the narrative before it trips over itself.",
+    name: "Business and Entrepreneurship",
+    terms: ["business", "startup", "entrepreneur", "marketing", "finance", "sales", "customer", "product", "revenue", "nonprofit", "fundraiser"],
   },
   {
-    min: 88,
-    className: "phoenix",
-    name: "Ivy Phoenix",
-    badge: "Final Boss",
-    line: "Annoyingly strong. The file is glowing. The committee may need oven mitts.",
+    name: "Research and Discovery",
+    terms: ["research", "study", "experiment", "lab", "paper", "published", "analysis", "investigate", "hypothesis", "survey", "data"],
+  },
+  {
+    name: "Community Service and Advocacy",
+    terms: ["volunteer", "community", "service", "advocacy", "helped", "mentored", "tutored", "donated", "equity", "access", "outreach"],
+  },
+  {
+    name: "Leadership and Organization",
+    terms: ["led", "leader", "president", "captain", "founder", "organized", "managed", "team", "club", "initiative", "event"],
+  },
+  {
+    name: "Writing and Humanities",
+    terms: ["writing", "essay", "journalism", "history", "literature", "language", "philosophy", "debate", "policy", "story", "culture"],
+  },
+  {
+    name: "Art, Design, and Media",
+    terms: ["art", "design", "music", "film", "photography", "media", "creative", "portfolio", "animation", "theater", "visual"],
+  },
+  {
+    name: "Math and Quantitative Thinking",
+    terms: ["math", "mathematics", "calculus", "statistics", "quantitative", "proof", "competition", "olympiad", "modeling", "economics"],
   },
 ];
 
-const majorKeywords = {
-  "Computer Science": [
-    "computer science",
-    "cs",
-    "code",
-    "programming",
-    "software",
-    "robotics",
-    "app",
-    "ai",
-    "algorithm",
-    "olympiad",
-    "usaco",
-    "ioi",
-    "hackathon",
-  ],
-  Engineering: ["robotics", "engineering", "build", "cad", "math", "physics", "design"],
-  "Pre-Med": ["hospital", "clinic", "biology", "research", "volunteer", "health", "science"],
-  Business: ["business", "deca", "startup", "finance", "marketing", "sales", "entrepreneur"],
-  Physics: ["physics", "research", "math", "simulation", "astronomy", "engineering", "olympiad"],
-  Undecided: ["project", "lead", "research", "volunteer", "club", "job", "community"],
-};
+const stopWords = new Set([
+  "about",
+  "after",
+  "again",
+  "also",
+  "because",
+  "before",
+  "being",
+  "could",
+  "every",
+  "first",
+  "from",
+  "have",
+  "into",
+  "just",
+  "like",
+  "more",
+  "most",
+  "other",
+  "over",
+  "their",
+  "there",
+  "these",
+  "they",
+  "this",
+  "through",
+  "under",
+  "using",
+  "where",
+  "which",
+  "while",
+  "with",
+  "would",
+  "student",
+  "school",
+  "college",
+  "application",
+]);
 
-const questBank = {
-  academic: [
-    {
-      title: "Win Back Academic Credibility",
-      detail: "Pick one hard class or exam goal and build a weekly study sprint around it.",
-      reward: "+8 Academic Power",
-    },
-    {
-      title: "Add Rigor Without Exploding",
-      detail: "Choose one advanced course that matches your major instead of collecting random difficulty points.",
-      reward: "+6 Academic Power",
-    },
-  ],
-  leadership: [
-    {
-      title: "Stop Being Club Wallpaper",
-      detail: "Take ownership of one measurable project inside a club, team, or community group.",
-      reward: "+10 Leadership",
-    },
-    {
-      title: "Run a Small Team",
-      detail: "Recruit 2-4 people to help execute one event, project, workshop, or campaign.",
-      reward: "+12 Leadership",
-    },
-  ],
-  impact: [
-    {
-      title: "Make the Numbers Real",
-      detail: "Track users helped, money raised, students taught, downloads, attendees, or outcomes.",
-      reward: "+9 Impact",
-    },
-    {
-      title: "Ship Something Public",
-      detail: "Publish a project, guide, event, fundraiser, tool, or resource people can actually use.",
-      reward: "+11 Impact",
-    },
-  ],
-  alignment: [
-    {
-      title: "Build the Major Artifact",
-      detail: "Create one project that makes your intended major obvious without needing a translator.",
-      reward: "+10 Major Alignment",
-    },
-    {
-      title: "Find a Serious Arena",
-      detail: "Enter a competition, research program, internship, or public challenge tied to your major.",
-      reward: "+12 Major Alignment",
-    },
-  ],
-  narrative: [
-    {
-      title: "Connect the Dots",
-      detail: "Write a one-sentence theme for your application, then cut activities that do not support it.",
-      reward: "+8 Narrative Strength",
-    },
-    {
-      title: "Upgrade the Origin Story",
-      detail: "Document why your interests matter and what problem you keep returning to.",
-      reward: "+7 Narrative Strength",
-    },
-  ],
-};
-
-function clamp(value, min = 0, max = 100) {
-  return Math.max(min, Math.min(max, Math.round(value)));
+if (window.pdfjsLib) {
+  window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 }
 
-function countMatches(text, terms) {
+function setStatus(message) {
+  readerStatus.textContent = message;
+}
+
+function normalizeText(text) {
+  return text.replace(/\s+/g, " ").trim();
+}
+
+function countWords(text) {
+  return normalizeText(text).split(/\s+/).filter(Boolean).length;
+}
+
+function termCount(text, term) {
+  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = new RegExp(`\\b${escaped}\\b`, "gi");
+  return (text.match(pattern) || []).length;
+}
+
+function scoreInterests(text) {
   const lowered = text.toLowerCase();
-  return terms.reduce((count, term) => count + (lowered.includes(term) ? 1 : 0), 0);
+  return interestCategories
+    .map((category) => {
+      const score = category.terms.reduce((total, term) => total + termCount(lowered, term), 0);
+      return { ...category, score };
+    })
+    .filter((category) => category.score > 0)
+    .sort((a, b) => b.score - a.score);
 }
 
-function hasAny(text, terms) {
-  const lowered = text.toLowerCase();
-  return terms.some((term) => lowered.includes(term));
+function getKeywords(text) {
+  const words = text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, " ")
+    .split(/\s+/)
+    .filter((word) => word.length > 3 && !stopWords.has(word));
+
+  const counts = new Map();
+  words.forEach((word) => counts.set(word, (counts.get(word) || 0) + 1));
+
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 12)
+    .map(([word, count]) => ({ word, count }));
 }
 
-function getAwardPower(awardText) {
-  const lowered = awardText.toLowerCase();
-  const hasInternationalSignal = hasAny(lowered, ["international", "world", "global"]);
-  const hasNationalSignal = hasAny(lowered, ["national", "usa", "usaco", "aime", "isef", "regeneron"]);
-  const hasEliteCompetition = hasAny(lowered, [
-    "olympiad",
-    "ioi",
-    "imo",
-    "icho",
-    "ipho",
-    "ibo",
-    "isef",
-    "regeneron",
-    "sts",
-    "usaco platinum",
-  ]);
-  const hasTopPlacement = hasAny(lowered, [
-    "gold",
-    "winner",
-    "champion",
-    "1st",
-    "first place",
-    "finalist",
-    "medalist",
-    "platinum",
-  ]);
+function getEvidenceSnippets(text, interests) {
+  const sentences = text
+    .replace(/\s+/g, " ")
+    .split(/(?<=[.!?])\s+/)
+    .map((sentence) => sentence.trim())
+    .filter((sentence) => sentence.length > 35);
 
-  if (hasInternationalSignal && hasEliteCompetition && hasTopPlacement) return 42;
-  if ((hasInternationalSignal || hasNationalSignal) && hasEliteCompetition) return 32;
-  if (hasNationalSignal && hasTopPlacement) return 24;
-  if (hasTopPlacement) return 14;
-  return 0;
+  const selected = [];
+  interests.slice(0, 4).forEach((interest) => {
+    const match = sentences.find((sentence) =>
+      interest.terms.some((term) => sentence.toLowerCase().includes(term)),
+    );
+
+    if (match && !selected.includes(match)) {
+      selected.push(match.length > 220 ? `${match.slice(0, 217)}...` : match);
+    }
+  });
+
+  return selected.slice(0, 4);
 }
 
-function getProfile() {
-  return {
-    grade: Number(document.querySelector("#grade").value),
-    major: document.querySelector("#major").value,
-    gpa: Number(document.querySelector("#gpa").value),
-    rigor: Number(document.querySelector("#rigor").value),
-    activities: document.querySelector("#activities").value,
-    awards: document.querySelector("#awards").value,
-    targetTier: document.querySelector("#targetTier").value,
-  };
+function renderChips(container, items, formatter) {
+  container.innerHTML = "";
+
+  if (items.length === 0) {
+    container.innerHTML = '<span class="empty-note">No clear signals yet</span>';
+    return;
+  }
+
+  items.forEach((item) => {
+    const chip = document.createElement("span");
+    chip.className = "chip";
+    chip.textContent = formatter(item);
+    container.appendChild(chip);
+  });
 }
 
-function scoreProfile(profile) {
-  const activityText = `${profile.activities} ${profile.awards}`;
-  const awardPower = getAwardPower(profile.awards);
-  const activityItems = profile.activities
-    .split(/,|\n/)
-    .map((item) => item.trim())
-    .filter(Boolean);
-  const awardItems = profile.awards
-    .split(/,|\n/)
-    .map((item) => item.trim())
-    .filter(Boolean);
+function renderEvidence(snippets) {
+  evidenceList.innerHTML = "";
 
-  const leadershipMatches = countMatches(activityText, [
-    "president",
-    "captain",
-    "founder",
-    "lead",
-    "leader",
-    "organized",
-    "created",
-    "started",
-  ]);
-  const impactMatches = countMatches(activityText, [
-    "raised",
-    "taught",
-    "users",
-    "students",
-    "published",
-    "launched",
-    "qualified",
-    "winner",
-    "finalist",
-    "international",
-    "national",
-    "gold",
-    "medal",
-    "olympiad",
-    "champion",
-    "1st",
-    "first place",
-  ]);
-  const alignmentMatches = countMatches(activityText, majorKeywords[profile.major] || []);
-  const hasMajorPrestige = awardPower >= 24 && alignmentMatches > 0;
+  if (snippets.length === 0) {
+    evidenceList.innerHTML = '<li>No strong evidence snippets found yet. Add more detailed text.</li>';
+    return;
+  }
 
-  const academicPower = clamp(profile.gpa * 18 + profile.rigor * 3.6 + awardPower * 0.55);
-  const leadership = clamp(18 + leadershipMatches * 15 + Math.min(activityItems.length, 7) * 4);
-  const impact = clamp(20 + impactMatches * 10 + awardItems.length * 5 + activityItems.length * 2 + awardPower);
-  const majorAlignment = clamp(
-    18 + alignmentMatches * 12 + (profile.major === "Undecided" ? 8 : 0) + (hasMajorPrestige ? awardPower * 0.9 : 0),
-  );
-  const narrativeStrength = clamp(
-    28 + alignmentMatches * 7 + leadershipMatches * 5 + impactMatches * 3 + awardPower * 0.55,
-  );
-
-  return {
-    "Academic Power": academicPower,
-    Leadership: leadership,
-    Impact: impact,
-    "Major Alignment": majorAlignment,
-    "Narrative Strength": narrativeStrength,
-  };
+  snippets.forEach((snippet) => {
+    const item = document.createElement("li");
+    item.textContent = snippet;
+    evidenceList.appendChild(item);
+  });
 }
 
-function mergeScores(baseScores, aiScores) {
-  if (!aiScores) return baseScores;
+function summarize(text) {
+  const cleanText = normalizeText(text);
+  const interests = scoreInterests(cleanText);
+  const keywords = getKeywords(cleanText);
+  const snippets = getEvidenceSnippets(cleanText, interests);
+  const words = countWords(cleanText);
+  const topInterests = interests.slice(0, 3);
 
-  return {
-    "Academic Power": clamp(aiScores.academicPower ?? baseScores["Academic Power"]),
-    Leadership: clamp(aiScores.leadership ?? baseScores.Leadership),
-    Impact: clamp(aiScores.impact ?? baseScores.Impact),
-    "Major Alignment": clamp(aiScores.majorAlignment ?? baseScores["Major Alignment"]),
-    "Narrative Strength": clamp(aiScores.narrativeStrength ?? baseScores["Narrative Strength"]),
-  };
+  wordCount.textContent = `${words} ${words === 1 ? "word" : "words"}`;
+  textPreview.textContent = cleanText.slice(0, 4000);
+
+  if (words < 25) {
+    summaryText.textContent =
+      "There is not enough text yet to make a useful read. Add a longer essay, activity description, resume, or brag sheet.";
+  } else if (topInterests.length === 0) {
+    summaryText.textContent =
+      "The text does not strongly point toward a specific interest area yet. It may need more concrete activities, projects, classes, or motivations.";
+  } else {
+    const interestPhrase = topInterests.map((interest) => interest.name.toLowerCase()).join(", ");
+    const keywordPhrase = keywords
+      .slice(0, 4)
+      .map((keyword) => keyword.word)
+      .join(", ");
+
+    summaryText.textContent = `This student appears most interested in ${interestPhrase}. The strongest signals come from repeated references to ${keywordPhrase || "their activities and experiences"}. A useful next step would be to connect these interests into one clearer theme or direction.`;
+  }
+
+  renderChips(interestList, topInterests, (interest) => `${interest.name} (${interest.score})`);
+  renderChips(keywordList, keywords.slice(0, 10), (keyword) => `${keyword.word} (${keyword.count})`);
+  renderEvidence(snippets);
 }
 
-async function evaluateWithAi(profile, fallbackScores) {
+async function readTextFile(file) {
+  return file.text();
+}
+
+async function readPdf(file) {
+  if (!window.pdfjsLib) {
+    throw new Error("PDF reader did not load. Check your internet connection and try again.");
+  }
+
+  const buffer = await file.arrayBuffer();
+  const pdf = await window.pdfjsLib.getDocument({ data: buffer }).promise;
+  const pages = [];
+
+  for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+    const page = await pdf.getPage(pageNumber);
+    const content = await page.getTextContent();
+    pages.push(content.items.map((item) => item.str).join(" "));
+  }
+
+  return pages.join("\n\n");
+}
+
+async function readDocx(file) {
+  if (!window.mammoth) {
+    throw new Error("Word reader did not load. Check your internet connection and try again.");
+  }
+
+  const buffer = await file.arrayBuffer();
+  const result = await window.mammoth.extractRawText({ arrayBuffer: buffer });
+  return result.value;
+}
+
+async function readFile(file) {
+  const name = file.name.toLowerCase();
+
+  if (name.endsWith(".pdf")) return readPdf(file);
+  if (name.endsWith(".docx")) return readDocx(file);
+  if (name.endsWith(".doc")) {
+    throw new Error("Old .doc files are not supported yet. Please export as .docx or paste the text.");
+  }
+
+  return readTextFile(file);
+}
+
+fileInput.addEventListener("change", async () => {
+  const file = fileInput.files?.[0];
+
+  if (!file) {
+    fileStatus.textContent = "No file selected";
+    return;
+  }
+
+  fileStatus.textContent = file.name;
+  setStatus("Reading file...");
+
   try {
-    const response = await fetch("/api/evaluate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(profile),
-    });
-
-    if (!response.ok) return { scores: fallbackScores, ai: null };
-
-    const ai = await response.json();
-    return {
-      scores: mergeScores(fallbackScores, ai.scores),
-      ai,
-    };
+    const text = await readFile(file);
+    textInput.value = text.trim();
+    setStatus("File loaded");
   } catch (error) {
-    return { scores: fallbackScores, ai: null };
+    setStatus(error.message);
   }
-}
-
-function getLevel(scores) {
-  const average = Object.values(scores).reduce((sum, score) => sum + score, 0) / 5;
-  return clamp(average / 8 + 1, 1, 15);
-}
-
-function getAverageScore(scores) {
-  return Object.values(scores).reduce((sum, score) => sum + score, 0) / 5;
-}
-
-function getMonsterRank(scores) {
-  const average = getAverageScore(scores);
-  return monsterRanks
-    .filter((rank) => average >= rank.min)
-    .sort((a, b) => b.min - a.min)[0];
-}
-
-function getReadiness(scores, targetTier) {
-  const average = getAverageScore(scores);
-  const targetPressure = {
-    "Top 20": 82,
-    "Top 50": 70,
-    "Strong State School": 58,
-    "Scholarship Maxing": 74,
-  }[targetTier];
-
-  if (average >= targetPressure + 8) return `${targetTier} Ready`;
-  if (average >= targetPressure - 7) return `${targetTier} Ready-ish`;
-  return `${targetTier} Training Arc`;
-}
-
-function getVerdict(profile, scores, aiEvaluation) {
-  if (aiEvaluation?.verdict) return aiEvaluation.verdict;
-
-  const weakest = Object.entries(scores).sort((a, b) => a[1] - b[1])[0][0];
-  const strongest = Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0];
-  const monster = getMonsterRank(scores);
-
-  const verdicts = {
-    "Academic Power": `${monster.name} verdict: your ${strongest.toLowerCase()} is doing pushups while academic power is looking for a chair. Fix the transcript story before aiming at ${profile.targetTier}.`,
-    Leadership: `${monster.name} verdict: you have activities, yes. Leadership? Currently decorative. Pick one arena and become mildly unavoidable.`,
-    Impact: `${monster.name} verdict: the vibes exist, but the receipts are missing. Colleges love impact they can count without squinting.`,
-    "Major Alignment": `${monster.name} verdict: ${profile.major} applicant detected. Evidence of ${profile.major} obsession is still loading. Build something that makes the major obvious.`,
-    "Narrative Strength": `${monster.name} verdict: this is not a build yet. It is a pile. A respectable pile, but still a pile. Find the thread.`,
-  };
-
-  return verdicts[weakest];
-}
-
-function renderMonster(monster, scores) {
-  const average = Math.round(getAverageScore(scores));
-  monsterAvatar.className = `monster-avatar ${monster.className}`;
-  monsterRankAvatar.className = `monster-avatar ${monster.className} compact`;
-  monsterPanel.setAttribute("aria-label", `${monster.name} avatar panel`);
-  monsterName.textContent = monster.name;
-  introRoast.textContent = monster.line;
-  verdictLabel.textContent = `${monster.name} Verdict`;
-  monsterRankName.textContent = monster.name;
-  monsterRankLine.textContent = monster.line;
-  monsterScore.textContent = average;
-}
-
-function chooseQuests(scores, aiEvaluation) {
-  if (Array.isArray(aiEvaluation?.quests) && aiEvaluation.quests.length > 0) {
-    return aiEvaluation.quests.slice(0, 4).map((quest) => ({
-      title: quest.title,
-      detail: quest.detail,
-      reward: quest.reward,
-    }));
-  }
-
-  const categories = {
-    "Academic Power": "academic",
-    Leadership: "leadership",
-    Impact: "impact",
-    "Major Alignment": "alignment",
-    "Narrative Strength": "narrative",
-  };
-
-  return Object.entries(scores)
-    .sort((a, b) => a[1] - b[1])
-    .slice(0, 4)
-    .map(([stat], index) => {
-      const options = questBank[categories[stat]];
-      return options[index % options.length];
-    });
-}
-
-function renderStats(scores) {
-  statsList.innerHTML = Object.entries(scores)
-    .map(
-      ([label, score]) => `
-        <div class="stat">
-          <div class="stat-row">
-            <span>${label}</span>
-            <span>${score}/100</span>
-          </div>
-          <div class="bar" aria-hidden="true">
-            <div class="bar-fill" style="--score: ${score}%"></div>
-          </div>
-        </div>
-      `,
-    )
-    .join("");
-}
-
-function renderQuests(quests) {
-  questCount.textContent = `${quests.length} quests`;
-  questList.innerHTML = quests
-    .map(
-      (quest, index) => `
-        <li class="quest">
-          <span class="quest-index">${index + 1}</span>
-          <div>
-            <h4>${quest.title}</h4>
-            <p>${quest.detail}</p>
-          </div>
-          <span class="reward">${quest.reward}</span>
-        </li>
-      `,
-    )
-    .join("");
-}
-
-async function generateBuild() {
-  const profile = getProfile();
-  const fallbackScores = scoreProfile(profile);
-  const loadingMonster = getMonsterRank(fallbackScores);
-
-  readinessBadge.textContent = "Evaluating build...";
-  monsterRankName.textContent = loadingMonster.name;
-  monsterRankLine.textContent = "Checking the applicant file without trusting keyword soup too much.";
-
-  const { scores, ai } = await evaluateWithAi(profile, fallbackScores);
-  const level = getLevel(scores);
-  const monster = getMonsterRank(scores);
-
-  buildTitle.textContent = `${profile.major} Applicant Lv. ${level}`;
-  readinessBadge.textContent = `${monster.badge}: ${getReadiness(scores, profile.targetTier)}`;
-  verdictText.textContent = getVerdict(profile, scores, ai);
-  renderMonster(monster, scores);
-  renderStats(scores);
-  renderQuests(chooseQuests(scores, ai));
-}
+});
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
-  generateBuild();
+  summarize(textInput.value);
+  setStatus("Analysis complete");
 });
 
 form.addEventListener("reset", () => {
-  window.setTimeout(generateBuild, 0);
+  window.setTimeout(() => {
+    fileStatus.textContent = "No file selected";
+    wordCount.textContent = "0 words";
+    summaryText.textContent = "Add a file or paste text, then run the reader to generate a summary.";
+    interestList.innerHTML = "";
+    keywordList.innerHTML = "";
+    evidenceList.innerHTML = "";
+    textPreview.textContent = "";
+    setStatus("Ready");
+  }, 0);
 });
-
-generateBuild();

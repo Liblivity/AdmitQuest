@@ -1,27 +1,24 @@
-# AdmitQuest
+# AdmitQuest Reader
 
-AdmitQuest is an early prototype for a college admissions RPG. Students enter a quick applicant profile, receive RPG-style stats, get a sarcastic Admissions Goblin verdict, and see a quest roadmap with practical next steps.
+AdmitQuest is currently a simple student-interest reader. It accepts pasted text or uploaded files, extracts readable text, and summarizes what the student seems interested in.
 
 ## Open Locally
 
 Open `index.html` in a browser.
 
-## AI Evaluation
+## Supported Inputs
 
-The static site falls back to local heuristic scoring. To enable AI scoring, deploy this repo to Vercel and add an `OPENAI_API_KEY` environment variable. The browser calls `/api/evaluate`; the serverless function keeps the API key off the client.
+- Pasted text
+- `.txt`, `.md`, and `.rtf`
+- `.pdf` through PDF.js
+- `.docx` through Mammoth.js
 
-## Prototype Features
+Old `.doc` files are not supported yet. Export them as `.docx` or paste the text.
 
-- Applicant profile form
-- RPG stat scoring
-- Optional AI evaluation endpoint
-- Admissions Goblin verdict
-- Quest roadmap recommendations
-- Responsive single-page layout
+## Current Output
 
-## Next Product Steps
-
-- Add a shareable result card
-- Save user builds locally
-- Add more major-specific quest banks
-- Publish the site with GitHub Pages or Vercel
+- Short interest summary
+- Likely interest areas
+- Top keywords
+- Evidence snippets
+- Extracted text preview
