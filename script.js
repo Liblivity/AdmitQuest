@@ -149,7 +149,7 @@ function getKeywords(text) {
 function getEvidenceSnippets(text, interests) {
   const sentences = text
     .replace(/\s+/g, " ")
-    .split(/(?<=[.!?])\s+/)
+    .split(/[.!?]+/)
     .map((sentence) => sentence.trim())
     .filter((sentence) => sentence.length > 35);
 
@@ -386,11 +386,14 @@ async function analyzeCurrentText() {
   setStatus("Analyzing...");
 
   try {
+    const localAnalysis = buildLocalAnalysis(text);
+    renderAnalysis(localAnalysis);
+    setStatus("Local analysis complete");
+
     const apiAnalysis = await summarizeWithApi(text);
     renderAnalysis({ ...apiAnalysis, words, extractedText: normalizeText(text) });
     setStatus("AI analysis complete");
   } catch (error) {
-    renderAnalysis(buildLocalAnalysis(text));
     setStatus("Local analysis complete");
   } finally {
     analyzeButton.disabled = false;
@@ -460,6 +463,8 @@ fileInput.addEventListener("change", async () => {
     setStatus(error.message);
   }
 });
+
+window.analyzeCurrentText = analyzeCurrentText;
 
 analyzeButton.addEventListener("click", analyzeCurrentText);
 

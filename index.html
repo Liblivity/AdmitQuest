@@ -59,7 +59,9 @@
           </label>
 
           <div class="actions">
-            <button type="button" id="analyzeButton" class="primary-button">Analyze Interests</button>
+            <button type="button" id="analyzeButton" class="primary-button" onclick="window.analyzeCurrentText?.()">
+              Analyze Interests
+            </button>
             <span id="readerStatus" role="status">Ready</span>
           </div>
         </form>
@@ -121,6 +123,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
-    <script src="script.js"></script>
+    <script src="script.js?v=8"></script>
   </body>
 </html>
