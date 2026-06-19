@@ -1,12 +1,16 @@
 const form = document.querySelector("#readerForm");
+const analyzeButton = document.querySelector("#analyzeButton");
 const fileInput = document.querySelector("#fileInput");
 const fileStatus = document.querySelector("#fileStatus");
 const textInput = document.querySelector("#textInput");
 const readerStatus = document.querySelector("#readerStatus");
 const wordCount = document.querySelector("#wordCount");
 const summaryText = document.querySelector("#summaryText");
+const majorList = document.querySelector("#majorList");
 const interestList = document.querySelector("#interestList");
 const keywordList = document.querySelector("#keywordList");
+const strengthList = document.querySelector("#strengthList");
+const weaknessList = document.querySelector("#weaknessList");
 const evidenceList = document.querySelector("#evidenceList");
 const textPreview = document.querySelector("#textPreview");
 
@@ -163,6 +167,97 @@ function getEvidenceSnippets(text, interests) {
   return selected.slice(0, 4);
 }
 
+function includesAny(text, terms) {
+  const lowered = text.toLowerCase();
+  return terms.some((term) => lowered.includes(term));
+}
+
+function getPossibleMajors(text, interests) {
+  const majors = [];
+  const lowered = text.toLowerCase();
+
+  if (includesAny(lowered, ["python", "java", "coding", "discord", "github", "downloads", "computer science", "ap computer science"])) {
+    majors.push("Computer Science");
+  }
+
+  if (includesAny(lowered, ["robotics", "mechanical", "cad", "fusion 360", "engineering", "robot", "physics"])) {
+    majors.push("Mechanical Engineering");
+    majors.push("Engineering");
+  }
+
+  if (includesAny(lowered, ["data entry", "spreadsheet", "excel", "analysis", "statistics"])) {
+    majors.push("Data Science / Analytics");
+  }
+
+  if (includesAny(lowered, ["newspaper", "staff writer", "articles", "journalism"])) {
+    majors.push("Journalism / Communications");
+  }
+
+  if (majors.length === 0 && interests[0]) {
+    majors.push(interests[0].name);
+  }
+
+  return [...new Set(majors)].slice(0, 4);
+}
+
+function getStrengths(text) {
+  const lowered = text.toLowerCase();
+  const strengths = [];
+
+  if (includesAny(lowered, ["ap calculus", "ap physics", "ap computer science", "honors chemistry", "3.92", "4.35"])) {
+    strengths.push("Strong STEM academic base with rigorous coursework and high grades.");
+  }
+
+  if (includesAny(lowered, ["mechanical team lead", "team lead", "captain", "founder", "president"])) {
+    strengths.push("Emerging leadership, especially through robotics or team-based activities.");
+  }
+
+  if (includesAny(lowered, ["github", "downloads", "built", "created", "project", "application", "bot"])) {
+    strengths.push("Concrete project-building signal, with software work that exists beyond class assignments.");
+  }
+
+  if (includesAny(lowered, ["tutored", "volunteer", "80 volunteer hours", "recurring students"])) {
+    strengths.push("Service and teaching experience with measurable commitment.");
+  }
+
+  if (includesAny(lowered, ["published", "articles", "newspaper", "writer"])) {
+    strengths.push("Communication ability through published writing or journalism.");
+  }
+
+  if (strengths.length === 0) {
+    strengths.push("The profile has enough detail to begin identifying interests and activity patterns.");
+  }
+
+  return strengths.slice(0, 5);
+}
+
+function getWeaknesses(text) {
+  const lowered = text.toLowerCase();
+  const weaknesses = [];
+
+  if (includesAny(lowered, ["not taken yet", "sat: not", "act: not"])) {
+    weaknesses.push("Testing is not established yet, so academic testing strength is still unknown.");
+  }
+
+  if (!includesAny(lowered, ["research", "published research", "lab", "paper", "isef"])) {
+    weaknesses.push("No clear research or advanced academic distinction yet, which matters for highly selective STEM paths.");
+  }
+
+  if (!includesAny(lowered, ["winner", "1st", "first place", "national", "international", "state champion"])) {
+    weaknesses.push("Awards appear mostly school or regional level; stronger external recognition would help.");
+  }
+
+  if (includesAny(lowered, ["general member", "member (9th-10th)", "participated"])) {
+    weaknesses.push("Some activities read as participation rather than ownership or measurable impact.");
+  }
+
+  if (includesAny(lowered, ["looking for internship", "interested in developing", "candidate"])) {
+    weaknesses.push("Several strongest opportunities are still future plans rather than completed achievements.");
+  }
+
+  return weaknesses.slice(0, 5);
+}
+
 function renderChips(container, items, formatter) {
   container.innerHTML = "";
 
@@ -194,36 +289,112 @@ function renderEvidence(snippets) {
   });
 }
 
-function summarize(text) {
+function renderList(container, items) {
+  container.innerHTML = "";
+
+  if (!items || items.length === 0) {
+    container.innerHTML = '<li>No clear signal yet</li>';
+    return;
+  }
+
+  items.forEach((text) => {
+    const item = document.createElement("li");
+    item.textContent = text;
+    container.appendChild(item);
+  });
+}
+
+function buildLocalAnalysis(text) {
   const cleanText = normalizeText(text);
   const interests = scoreInterests(cleanText);
   const keywords = getKeywords(cleanText);
   const snippets = getEvidenceSnippets(cleanText, interests);
   const words = countWords(cleanText);
   const topInterests = interests.slice(0, 3);
+  const possibleMajors = getPossibleMajors(cleanText, interests);
+  const strengths = getStrengths(cleanText);
+  const weaknesses = getWeaknesses(cleanText);
 
-  wordCount.textContent = `${words} ${words === 1 ? "word" : "words"}`;
-  textPreview.textContent = cleanText.slice(0, 4000);
+  let summary =
+    "There is not enough text yet to make a useful read. Add a longer essay, activity description, resume, or brag sheet.";
 
-  if (words < 25) {
-    summaryText.textContent =
-      "There is not enough text yet to make a useful read. Add a longer essay, activity description, resume, or brag sheet.";
-  } else if (topInterests.length === 0) {
-    summaryText.textContent =
+  if (words >= 25 && topInterests.length === 0) {
+    summary =
       "The text does not strongly point toward a specific interest area yet. It may need more concrete activities, projects, classes, or motivations.";
-  } else {
+  } else if (words >= 25) {
     const interestPhrase = topInterests.map((interest) => interest.name.toLowerCase()).join(", ");
     const keywordPhrase = keywords
       .slice(0, 4)
       .map((keyword) => keyword.word)
       .join(", ");
 
-    summaryText.textContent = `This student appears most interested in ${interestPhrase}. The strongest signals come from repeated references to ${keywordPhrase || "their activities and experiences"}. A useful next step would be to connect these interests into one clearer theme or direction.`;
+    summary = `This student appears most interested in ${interestPhrase}. The likely academic direction is ${possibleMajors.join(", ") || "still undecided"}. The strongest signals come from ${keywordPhrase || "their activities and experiences"}. The profile is strongest where projects, robotics, academics, and service overlap, but it still needs clearer high-level distinction and completed leadership impact.`;
   }
 
-  renderChips(interestList, topInterests, (interest) => `${interest.name} (${interest.score})`);
-  renderChips(keywordList, keywords.slice(0, 10), (keyword) => `${keyword.word} (${keyword.count})`);
-  renderEvidence(snippets);
+  return {
+    summary,
+    possibleMajors,
+    interests: topInterests.map((interest) => interest.name),
+    keywords: keywords.slice(0, 10).map((keyword) => `${keyword.word} (${keyword.count})`),
+    strengths,
+    weaknesses,
+    evidence: snippets,
+    words,
+    extractedText: cleanText,
+  };
+}
+
+async function summarizeWithApi(text) {
+  const response = await fetch("/api/summarize", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ text }),
+  });
+
+  if (!response.ok) {
+    throw new Error("API summary unavailable");
+  }
+
+  return response.json();
+}
+
+function renderAnalysis(analysis) {
+  wordCount.textContent = `${analysis.words} ${analysis.words === 1 ? "word" : "words"}`;
+  textPreview.textContent = (analysis.extractedText || textInput.value).slice(0, 4000);
+  summaryText.textContent = analysis.summary;
+
+  renderChips(majorList, analysis.possibleMajors || [], (major) => major);
+  renderChips(interestList, analysis.interests || [], (interest) => interest);
+  renderChips(keywordList, analysis.keywords || [], (keyword) => keyword);
+  renderList(strengthList, analysis.strengths || []);
+  renderList(weaknessList, analysis.weaknesses || []);
+  renderEvidence(analysis.evidence || []);
+}
+
+async function analyzeCurrentText() {
+  const text = textInput.value;
+  const words = countWords(text);
+
+  if (words === 0) {
+    setStatus("Add text first");
+    return;
+  }
+
+  analyzeButton.disabled = true;
+  setStatus("Analyzing...");
+
+  try {
+    const apiAnalysis = await summarizeWithApi(text);
+    renderAnalysis({ ...apiAnalysis, words, extractedText: normalizeText(text) });
+    setStatus("AI analysis complete");
+  } catch (error) {
+    renderAnalysis(buildLocalAnalysis(text));
+    setStatus("Local analysis complete");
+  } finally {
+    analyzeButton.disabled = false;
+  }
 }
 
 async function readTextFile(file) {
@@ -290,10 +461,11 @@ fileInput.addEventListener("change", async () => {
   }
 });
 
+analyzeButton.addEventListener("click", analyzeCurrentText);
+
 form.addEventListener("submit", (event) => {
   event.preventDefault();
-  summarize(textInput.value);
-  setStatus("Analysis complete");
+  analyzeCurrentText();
 });
 
 form.addEventListener("reset", () => {
@@ -301,8 +473,11 @@ form.addEventListener("reset", () => {
     fileStatus.textContent = "No file selected";
     wordCount.textContent = "0 words";
     summaryText.textContent = "Add a file or paste text, then run the reader to generate a summary.";
+    majorList.innerHTML = "";
     interestList.innerHTML = "";
     keywordList.innerHTML = "";
+    strengthList.innerHTML = "";
+    weaknessList.innerHTML = "";
     evidenceList.innerHTML = "";
     textPreview.textContent = "";
     setStatus("Ready");

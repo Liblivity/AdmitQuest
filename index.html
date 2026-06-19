@@ -34,7 +34,7 @@
       </section>
 
       <section class="workbench">
-        <form id="readerForm" class="input-panel">
+        <form id="readerForm" class="input-panel" onsubmit="return false">
           <div class="panel-heading">
             <div>
               <p class="eyebrow">Input</p>
@@ -59,7 +59,7 @@
           </label>
 
           <div class="actions">
-            <button type="submit" class="primary-button">Analyze Interests</button>
+            <button type="button" id="analyzeButton" class="primary-button">Analyze Interests</button>
             <span id="readerStatus" role="status">Ready</span>
           </div>
         </form>
@@ -81,14 +81,29 @@
 
           <div class="result-grid">
             <div class="result-block">
+              <p class="eyebrow">Academic Interest / Possible Major</p>
+              <div id="majorList" class="chip-list"></div>
+            </div>
+
+            <div class="result-block">
               <p class="eyebrow">Likely Interests</p>
               <div id="interestList" class="chip-list"></div>
             </div>
 
             <div class="result-block">
-              <p class="eyebrow">Top Keywords</p>
-              <div id="keywordList" class="chip-list"></div>
+              <p class="eyebrow">Strengths</p>
+              <ul id="strengthList" class="insight-list"></ul>
             </div>
+
+            <div class="result-block">
+              <p class="eyebrow">Weaknesses / Gaps</p>
+              <ul id="weaknessList" class="insight-list"></ul>
+            </div>
+          </div>
+
+          <div class="result-block">
+            <p class="eyebrow">Top Keywords</p>
+            <div id="keywordList" class="chip-list"></div>
           </div>
 
           <div class="result-block">

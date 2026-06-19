@@ -274,6 +274,7 @@ textarea:focus {
   font-weight: 800;
 }
 
+.insight-list,
 .evidence-list {
   display: grid;
   gap: 10px;
@@ -282,6 +283,7 @@ textarea:focus {
   list-style: none;
 }
 
+.insight-list li,
 .evidence-list li {
   padding: 12px;
   border-left: 4px solid var(--gold);
@@ -289,6 +291,11 @@ textarea:focus {
   color: var(--muted);
   background: rgba(184, 134, 31, 0.08);
   line-height: 1.55;
+}
+
+.insight-list li {
+  border-left-color: var(--blue);
+  background: rgba(49, 95, 143, 0.08);
 }
 
 .text-preview {
