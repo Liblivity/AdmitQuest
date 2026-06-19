@@ -81,7 +81,7 @@
             </p>
           </div>
 
-          <div class="result-grid">
+          <div class="result-grid compact-results">
             <div class="result-block">
               <p class="eyebrow">Academic Interest / Possible Major</p>
               <div id="majorList" class="chip-list"></div>
@@ -92,26 +92,37 @@
               <div id="interestList" class="chip-list"></div>
             </div>
 
-            <div class="result-block">
-              <p class="eyebrow">Strengths</p>
-              <ul id="strengthList" class="insight-list"></ul>
+          </div>
+
+          <details class="detail-panel" open>
+            <summary>Strengths and gaps</summary>
+            <div class="result-grid">
+              <div class="result-block">
+                <p class="eyebrow">Strengths</p>
+                <ul id="strengthList" class="insight-list"></ul>
+              </div>
+
+              <div class="result-block">
+                <p class="eyebrow">Weaknesses / Gaps</p>
+                <ul id="weaknessList" class="insight-list"></ul>
+              </div>
             </div>
+          </details>
 
-            <div class="result-block">
-              <p class="eyebrow">Weaknesses / Gaps</p>
-              <ul id="weaknessList" class="insight-list"></ul>
+          <details class="detail-panel">
+            <summary>Keywords and evidence</summary>
+            <div class="detail-stack">
+              <div class="result-block">
+                <p class="eyebrow">Top Keywords</p>
+                <div id="keywordList" class="chip-list"></div>
+              </div>
+
+              <div class="result-block">
+                <p class="eyebrow">Evidence Snippets</p>
+                <ul id="evidenceList" class="evidence-list"></ul>
+              </div>
             </div>
-          </div>
-
-          <div class="result-block">
-            <p class="eyebrow">Top Keywords</p>
-            <div id="keywordList" class="chip-list"></div>
-          </div>
-
-          <div class="result-block">
-            <p class="eyebrow">Evidence Snippets</p>
-            <ul id="evidenceList" class="evidence-list"></ul>
-          </div>
+          </details>
 
           <details class="text-preview">
             <summary>Extracted text preview</summary>

@@ -163,7 +163,8 @@ select {
 }
 
 textarea {
-  min-height: 300px;
+  min-height: 240px;
+  max-height: 430px;
   resize: vertical;
   padding: 13px;
   line-height: 1.55;
@@ -248,6 +249,7 @@ textarea:focus {
 
 .summary-card,
 .result-block,
+.detail-panel,
 .lab-finder,
 .text-preview {
   border: 1px solid var(--line);
@@ -272,8 +274,34 @@ textarea:focus {
   gap: 12px;
 }
 
+.compact-results .result-block {
+  min-height: 94px;
+}
+
 .result-block {
   padding: 14px;
+}
+
+.detail-panel {
+  overflow: hidden;
+}
+
+.detail-panel summary,
+.text-preview summary {
+  padding: 13px 14px;
+  color: var(--ink);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.detail-panel .result-grid,
+.detail-stack {
+  padding: 0 14px 14px;
+}
+
+.detail-stack {
+  display: grid;
+  gap: 12px;
 }
 
 .chip-list {
@@ -324,13 +352,6 @@ textarea:focus {
   overflow: hidden;
 }
 
-.text-preview summary {
-  padding: 14px 16px;
-  color: var(--ink);
-  font-weight: 800;
-  cursor: pointer;
-}
-
 .text-preview pre {
   max-height: 260px;
   margin: 0;
@@ -356,6 +377,9 @@ textarea:focus {
 .lab-list {
   display: grid;
   gap: 12px;
+  max-height: 430px;
+  overflow: auto;
+  padding-right: 4px;
 }
 
 .lab-card {
